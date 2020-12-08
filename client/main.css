@@ -1,0 +1,74 @@
+body {
+
+  font-family: sans-serif;
+
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  padding: 0;
+  margin: 0;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+header {
+  display: flex;
+  justify-content: space-around;
+  background: rgb(78, 101, 117);
+  padding: 20px 15px 15px 15px;
+  position: relative;
+  box-shadow: 0 3px 3px rgba(34, 25, 25, 0.4);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menu-buttons {
+  width: 246px;
+  padding: 10px;
+  margin: 20px;
+}
+
+.fill-form {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.fill-form > div, .fill-form > button {
+  margin: 10px;
+}
+
+.players {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.match-list {
+  width: 50%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.round {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.round-list {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
