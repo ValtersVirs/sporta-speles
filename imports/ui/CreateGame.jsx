@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random'
-import { GamesCollection } from '/imports/api/GamesCollection';
-import { PlayersCollection } from '/imports/api/PlayersCollection';
-import { TeamsCollection } from '/imports/api/TeamsCollection';
 import { GameLobby } from './GameLobby';
 
 export const CreateGame = ({ players, deletePlayer }) => {
@@ -24,30 +21,11 @@ export const CreateGame = ({ players, deletePlayer }) => {
       if (!teamNumber || !teamSize) return;
     }
 
-    PlayersCollection.insert({
-      name: name.trim(),
-      createdAt: new Date(),
-      gameId: randomId,
-      isAdmin: true,
-    });
-
-    if (select === "Team") {
-      GamesCollection.insert({
-        gameId: randomId,
-        gameType: select,
-        isOvertime: isChecked,
-        numberOfTeams: teamNumber,
-      });
-      Meteor.call('addTeams', randomId, teamNumber)
-    } else {
-      GamesCollection.insert({
-        gameId: randomId,
-        gameType: select,
-        isOvertime: isChecked,
-      });
-    }
-
-    setIsFilledIn(true);
+    Meteor.call('playerInsert', name, randomId, true, (err, res) => {
+      Meteor.call('gameCreate', randomId, select, isChecked, teamNumber, (err, res) => {
+        setIsFilledIn(true);
+      })}
+    )
   };
 
   const onChangeNumber = e => {

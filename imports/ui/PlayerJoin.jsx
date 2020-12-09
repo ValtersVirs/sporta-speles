@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
+import { Tracker } from 'meteor/tracker'
 import { useTracker } from 'meteor/react-meteor-data';
 import { PlayersCollection } from '/imports/api/PlayersCollection';
 import { GamesCollection } from '/imports/api/GamesCollection';
@@ -21,17 +22,14 @@ export const PlayerJoin = ({ players, deletePlayer }) => {
       PlayersCollection.find({ name: name, gameId: gameId }).count() > 0
     ) return;
 
-    PlayersCollection.insert({
-      name: name,
-      gameId: gameId,
-      createdAt: new Date()
+    Meteor.call('playerInsert', name, gameId, false, (err, res) => {
+      setIsFilledIn(true);
     });
-
-    setIsFilledIn(true);
   };
 
   return (
     <div className="player-join">
+
       {isFilledIn ? (
         <div>
           <div>
