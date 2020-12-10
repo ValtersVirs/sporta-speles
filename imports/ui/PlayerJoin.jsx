@@ -7,22 +7,23 @@ import { GamesCollection } from '/imports/api/GamesCollection';
 import { GameLobby } from './GameLobby';
 import { Player } from './Player';
 
-export const PlayerJoin = ({ players, deletePlayer }) => {
-  const [name, setName] = useState("");
+export const PlayerJoin = ({ user, players, deletePlayer, goToMenu }) => {
   const [gameId, setGameId] = useState("");
   const [playerId, setPlayerId] = useState("");
   const [isFilledIn, setIsFilledIn] = useState(false);
 
+  if (PlayersCollection.find({ name: user.username }).count() !== 0 && !gameId) {
+    setIsFilledIn(true);
+    setGameId(PlayersCollection.findOne({ name: user.username }).gameId);
+  }
+
   const handleSubmit = e => {
     e.preventDefault();
 
-    if (!name ||
-     !gameId ||
-      GamesCollection.find({ gameId: gameId }).count() === 0 ||
-      PlayersCollection.find({ name: name, gameId: gameId }).count() > 0
-    ) return;
+    if (!gameId || GamesCollection.find({ gameId: gameId }).count() === 0)
+      return;
 
-    Meteor.call('playerInsert', name, gameId, false, (err, res) => {
+    Meteor.call('playerInsert', user.username, gameId, false, (err, res) => {
       setIsFilledIn(true);
     });
   };
@@ -35,24 +36,16 @@ export const PlayerJoin = ({ players, deletePlayer }) => {
           <div>
             <GameLobby
               players={players}
-              playerName={name}
+              playerName={user.username}
               gameId={gameId}
               deletePlayer={deletePlayer}
+              goToMenu={goToMenu}
             />
           </div>
 
         </div>
       ) : (
         <form className="fill-form" onSubmit={handleSubmit}>
-          <div>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
           <div>
             <input
               type="text"
@@ -63,6 +56,8 @@ export const PlayerJoin = ({ players, deletePlayer }) => {
           </div>
 
           <button type="submit">Join</button>
+
+          <button onClick={goToMenu}>Back</button>
         </form>
       )}
     </div>

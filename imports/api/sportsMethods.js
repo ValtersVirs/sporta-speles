@@ -39,6 +39,11 @@ Meteor.methods({
   'playerDelete'(id) {
     PlayersCollection.remove(id);
   },
+  'gameEnd'(gameId) {
+    PlayersCollection.remove({ gameId: gameId });
+    TeamsCollection.remove({ gameId: gameId });
+    GamesCollection.remove({ gameId: gameId });
+  },
   'gameStart'(gameId) {
     GamesCollection.update({ gameId: gameId }, {
       $set: { gameStart: true }
@@ -56,5 +61,8 @@ Meteor.methods({
   },
   'currentPlayer'(name, gameId) {
     PlayersCollection.findOne( { name: name, gameId: gameId } );
+  },
+  'removeUser'() {
+    Meteor.users.remove(this.userId);
   },
 })

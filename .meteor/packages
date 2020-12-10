@@ -20,4 +20,4 @@ autopublish@1.0.7             # Publish all data to the clients (for prototyping
 static-html             # Define static page content in .html files
 react-meteor-data       # React higher-order component for reactively tracking Meteor data
 random@1.2.0
-tmeasday:publish-counts
+accounts-password

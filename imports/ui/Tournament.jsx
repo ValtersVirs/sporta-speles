@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Player } from './Player';
 
-export const Tournament = ({ participants }) => {
+export const Tournament = ({ participants, endGame, isAdmin }) => {
   const [partList, setPartList] = useState([participants]);
 
   let partCurrent = partList[partList.length - 1].slice(0);
@@ -56,6 +56,9 @@ export const Tournament = ({ participants }) => {
       Tournament
       <div>{tournament}</div>
       <div><Participants part={participants} /></div>
+      {isAdmin ? (
+          <button onClick={endGame}>End game</button>
+      ) : ""}
     </div>
   );
 };

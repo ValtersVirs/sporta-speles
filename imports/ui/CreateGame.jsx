@@ -3,8 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random'
 import { GameLobby } from './GameLobby';
 
-export const CreateGame = ({ players, deletePlayer }) => {
-  const [name, setName] = useState('');
+export const CreateGame = ({ user, players, deletePlayer, goToMenu }) => {
   const [select, setSelect] = useState('Individual');
   const [teamSize, setTeamSize] = useState('');
   const [teamNumber, setTeamNumber] = useState('');
@@ -15,13 +14,11 @@ export const CreateGame = ({ players, deletePlayer }) => {
   const handleSubmit = e => {
     e.preventDefault();
 
-    if (!name) return;
-
     if (select === "Team") {
       if (!teamNumber || !teamSize) return;
     }
 
-    Meteor.call('playerInsert', name, randomId, true, (err, res) => {
+    Meteor.call('playerInsert', user.username, randomId, true, (err, res) => {
       Meteor.call('gameCreate', randomId, select, isChecked, teamNumber, (err, res) => {
         setIsFilledIn(true);
       })}
@@ -94,22 +91,14 @@ export const CreateGame = ({ players, deletePlayer }) => {
         <div>
             <GameLobby
               players={players}
-              playerName={name}
+              playerName={user.username}
               gameId={randomId}
               deletePlayer={deletePlayer}
+              goToMenu={goToMenu}
             />
         </div>
       ) : (
         <form className="fill-form" onSubmit={handleSubmit}>
-          <div>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              value={name}
-              onChange={e => setName(e.target.value)}
-            />
-          </div>
-
           <div>
             <label>Game Type</label>
             <select value={select} onChange={e => setSelect(e.target.value)}>
@@ -122,6 +111,8 @@ export const CreateGame = ({ players, deletePlayer }) => {
           {selectedOptions(select)}
 
           <button type="submit">Create Game</button>
+
+          <button onClick={goToMenu}>Back</button>
         </form>
       )}
     </div>
