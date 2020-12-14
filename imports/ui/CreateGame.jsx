@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random'
 import { GameLobby } from './GameLobby';
 
-export const CreateGame = ({ user, players, deletePlayer, goToMenu }) => {
+export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
   const [select, setSelect] = useState('Individual');
   const [teamSize, setTeamSize] = useState('');
   const [teamNumber, setTeamNumber] = useState('');
@@ -90,7 +90,6 @@ export const CreateGame = ({ user, players, deletePlayer, goToMenu }) => {
       {isFilledIn ? (
         <div>
             <GameLobby
-              players={players}
               playerName={user.username}
               gameId={randomId}
               deletePlayer={deletePlayer}

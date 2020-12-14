@@ -54,8 +54,8 @@ Meteor.methods({
       $push: { players: player }
     })
   },
-  'leaveTeam'(player, team, gameID) {
-    TeamsCollection.update({ gameId: gameID, name: team }, {
+  'leaveTeam'(player, team, gameId) {
+    TeamsCollection.update({ gameId: gameId, name: team }, {
       $pull: { players: player }
     })
   },
@@ -64,5 +64,53 @@ Meteor.methods({
   },
   'removeUser'() {
     Meteor.users.remove(this.userId);
+  },
+  'setLoser'(name, gameType) {
+  /*  if (gameType === "Team") {
+      TeamsCollection.update({ name: name }, {
+        $set: { status: "lost" }
+      })
+    } else {
+    PlayersCollection.update({ name: name }, {
+      $set: { status: "lost" }
+    })}
+  */
+    PlayersCollection.update({ name: name }, {
+      $set: { playerStatus: "lost" }
+    })
+  },
+  'firstRound'(gameId, gameType) {
+    gameType === "Team" ? (
+      TeamsCollection.update({
+        gameId: gameId,
+        round: { $exists: false }
+      }, {
+        $set: { round: 1, status: "playing" }
+      }, { multi: true })
+    ) : (
+      PlayersCollection.update({
+        gameId: gameId,
+        round: { $exists: false }
+      }, {
+        $set: { round: 1, status: "playing" }
+      }, { multi: true })
+    )
+  },
+  'matchCompleted'(winner, loser, gameType) {
+    gameType === "Team" ? (
+      TeamsCollection.update({ name: winner }, {
+        $inc: { round: 1 }
+      }),
+      TeamsCollection.update({ name: loser }, {
+        $set: { status: "lost" }
+      })
+    ) : (
+      PlayersCollection.update({ name: winner }, {
+        $inc: { round: 1 }
+      }),
+      PlayersCollection.update({ name: loser }, {
+        $set: { status: "lost" }
+      })
+    )
   },
 })

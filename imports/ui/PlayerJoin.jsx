@@ -7,7 +7,7 @@ import { GamesCollection } from '/imports/api/GamesCollection';
 import { GameLobby } from './GameLobby';
 import { Player } from './Player';
 
-export const PlayerJoin = ({ user, players, deletePlayer, goToMenu }) => {
+export const PlayerJoin = ({ user, deletePlayer, goToMenu }) => {
   const [gameId, setGameId] = useState("");
   const [playerId, setPlayerId] = useState("");
   const [isFilledIn, setIsFilledIn] = useState(false);
@@ -30,12 +30,10 @@ export const PlayerJoin = ({ user, players, deletePlayer, goToMenu }) => {
 
   return (
     <div className="player-join">
-
       {isFilledIn ? (
         <div>
           <div>
             <GameLobby
-              players={players}
               playerName={user.username}
               gameId={gameId}
               deletePlayer={deletePlayer}

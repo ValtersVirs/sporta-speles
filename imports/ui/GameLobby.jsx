@@ -9,7 +9,7 @@ import { Admin } from './Admin'
 import { Tournament } from './Tournament';
 import { Teams } from './Teams'
 
-export const GameLobby = ({ players, playerName, gameId, deletePlayer, goToMenu }) => {
+export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
   const game = useTracker( () => GamesCollection.findOne( { gameId: gameId } ));
   const curGameTeams = useTracker( () => TeamsCollection.find({ gameId: gameId }, {
     sort: { createdAt: 1 }
@@ -24,6 +24,12 @@ export const GameLobby = ({ players, playerName, gameId, deletePlayer, goToMenu 
   ) : (
     curGamePlayers
   ))
+
+  const gameStart = () => {
+    Meteor.call('firstRound', game.gameId, game.gameType, (err, res) => {
+      Meteor.call('gameStart', game.gameId);
+    })
+  }
 
   const leaveGame = () => {
     Meteor.call('playerDelete', curPlayer._id, (err, res) => {
@@ -48,7 +54,9 @@ export const GameLobby = ({ players, playerName, gameId, deletePlayer, goToMenu 
         <Fragment>
           {game.gameStart ? (
             <Tournament
-              participants={tournamentParticipants}
+              part={tournamentParticipants}
+              gameId={game.gameId}
+              gameType={game.gameType}
               endGame={endGame}
               isAdmin={curPlayer.isAdmin}
             />
@@ -75,9 +83,7 @@ export const GameLobby = ({ players, playerName, gameId, deletePlayer, goToMenu 
                     />) }
                   </ul>
 
-                  <button onClick={() => {
-                    Meteor.call('gameStart', game.gameId);
-                  }} >Start game</button>
+                  <button onClick={gameStart}>Start game</button>
                 </Fragment>
               ) : (
                 <ul className="players">

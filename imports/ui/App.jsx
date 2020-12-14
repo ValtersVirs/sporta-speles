@@ -12,6 +12,10 @@ export const App = () => {
   const [create, setCreate] = useState(false);
   const [showButtons, setShowButtons] = useState(true);
 
+  Meteor.subscribe('allPlayers');
+  Meteor.subscribe('allGames');
+  Meteor.subscribe('allTeams');
+
   const user = useTracker(() => Meteor.user());
 
   const players = useTracker( () =>
@@ -51,7 +55,7 @@ export const App = () => {
                 <div>
                   <button className="menu-buttons" onClick={() => {
                     setJoin(!join);
-                    setShowButtons(false)
+                    setShowButtons(false);
                   }}>Join Game</button>
                 </div>
                 <div>
@@ -65,14 +69,12 @@ export const App = () => {
 
             {join ? ( <PlayerJoin
               user={user}
-              players={players}
               deletePlayer={deletePlayer}
               goToMenu={showMenu}
-            /> ) : ( "" )}
+             /> ) : ( "" )}
 
             {create ? ( <CreateGame
               user={user}
-              players={players}
               deletePlayer={deletePlayer}
               goToMenu={showMenu}
             /> ) : ( "" )}

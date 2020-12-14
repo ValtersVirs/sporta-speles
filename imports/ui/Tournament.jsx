@@ -1,10 +1,43 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Meteor } from 'meteor/meteor';
+import { PlayersCollection } from '/imports/api/PlayersCollection';
 import { Player } from './Player';
 
-export const Tournament = ({ participants, endGame, isAdmin }) => {
-  const [partList, setPartList] = useState([participants]);
+export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
+  const [partList, setPartList] = useState([""]);
+  const partCurrent = useRef("");
 
-  let partCurrent = partList[partList.length - 1].slice(0);
+  useEffect(() => {
+    var participants = []
+    const maxRound = PlayersCollection.findOne({ gameId: gameId }, {
+      sort: { round: -1 }
+    }).round;
+
+    const maxRoundGames = PlayersCollection.find({
+      gameId: gameId,
+      round: maxRound,
+    }).count()
+
+    //completedRounds = maxRound - (x ? 1 : 0)
+
+    console.log(`maxRound = ${maxRound}`);
+
+    for (let n = 0; n < maxRound; n++) {
+      participants[n] = PlayersCollection.find({
+        gameId: gameId,
+        round: { $gt: n },
+      }).fetch()
+    }
+
+    console.log("participants");
+    console.log(participants);
+
+    partCurrent.current = participants[participants.length - 1];
+    setPartList(participants);
+  }, []);
+
+  console.log("partCurrent:");
+  console.log(partCurrent.current);
 
   const swap = ( arr1 ) => {
     arr = arr1.slice(0);
@@ -12,33 +45,30 @@ export const Tournament = ({ participants, endGame, isAdmin }) => {
     return arr;
   }
 
-  const rounds = Math.ceil(Math.log(participants.length) / Math.log(2));
+  const rounds = Math.ceil(Math.log(part.length) / Math.log(2));
 
-  let matchCount = 0;
-  let roundCount = 0;
-
-  let x = 0;
-
-  if (partCurrent.length % 2) x = 1;
+  let x;
 
   const matchLoser = ( index ) => {
-    console.log(`${partCurrent[index].name} lost`);
-    partCurrent.splice(index, 1, 'removed');
+    x = partCurrent.current.length % 2 ? 1 : 0;
+    console.log(`${partCurrent.current[index].name} lost`);
+    var loser = partCurrent.current[index].name;
+    var winner = index % 2 ? index - 1 : index + 1;
+    partCurrent.current[index].status = "lost";
+    Meteor.call('matchCompleted', partCurrent.current[winner].name, loser, gameType)
+    console.log(`winner ${partCurrent.current[winner].name}`);
+    console.log(`loser ${loser}`);
     console.log('partCurrent array:');
-    console.log(partCurrent);
+    console.log(partCurrent.current);
     console.log('partList array:');
     console.log(partList);
-    matchCount++;
-    console.log(`matches played ${matchCount}`);
-    if (matchCount == (partCurrent.length - x) / 2) {
-      partCurrent = partCurrent.filter(a => a !== 'removed');
-      if (x) partCurrent = swap(partCurrent);
-      matchCount = 0;
-      roundCount ++;
+    if (partCurrent.current.filter(x => x.status === "lost").length == (partCurrent.current.length - x) / 2) {
+      partCurrent.current = partCurrent.current.filter(a => a.status !== "lost");
+      if (x) partCurrent.current = swap(partCurrent.current);
       console.log(`new partCurrent array`);
-      console.log(partCurrent);
-      console.log(`partCurrent length ${partCurrent.length}`);
-      setPartList(partList => [...partList, partCurrent]);
+      console.log(partCurrent.current);
+      console.log(`partCurrent length ${partCurrent.current.length}`);
+      setPartList(partList => [...partList, partCurrent.current]);
     }
   };
 
@@ -55,7 +85,7 @@ export const Tournament = ({ participants, endGame, isAdmin }) => {
     <div>
       Tournament
       <div>{tournament}</div>
-      <div><Participants part={participants} /></div>
+      <div><Participants part={part}/></div>
       {isAdmin ? (
           <button onClick={endGame}>End game</button>
       ) : ""}
