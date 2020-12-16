@@ -4,40 +4,124 @@ import { PlayersCollection } from '/imports/api/PlayersCollection';
 import { Player } from './Player';
 
 export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
-  const [partList, setPartList] = useState([""]);
+  const [roundList, setRoundList] = useState([""]);
   const partCurrent = useRef("");
+  const isInitialMount = useRef(0);
+
+  const [update, setUpdate] = useState(0);
+
+  console.log("main roundList");
+  console.log(roundList);
+
+  console.log("main partCurrent:");
+  console.log(partCurrent.current);
 
   useEffect(() => {
-    var participants = []
-    const maxRound = PlayersCollection.findOne({ gameId: gameId }, {
-      sort: { round: -1 }
-    }).round;
+    Meteor.call('setId', gameId, gameType, (err, res) => {
+      var rounds = []
+      const maxRound = PlayersCollection.findOne({ gameId: gameId }, {
+        sort: { round: -1 }
+      }).round;
 
-    const maxRoundGames = PlayersCollection.find({
-      gameId: gameId,
-      round: maxRound,
-    }).count()
-
-    //completedRounds = maxRound - (x ? 1 : 0)
-
-    console.log(`maxRound = ${maxRound}`);
-
-    for (let n = 0; n < maxRound; n++) {
-      participants[n] = PlayersCollection.find({
+      const maxRoundCount = PlayersCollection.find({
         gameId: gameId,
-        round: { $gt: n },
-      }).fetch()
-    }
+        round: maxRound,
+      }).count()
 
-    console.log("participants");
-    console.log(participants);
+      const totalParticipants = PlayersCollection.find({ gameId: gameId }).count()
 
-    partCurrent.current = participants[participants.length - 1];
-    setPartList(participants);
+      const completedRounds = maxRound - (maxRoundCount === Math.ceil(totalParticipants / Math.pow(2, maxRound - 1)) ? 0 : 1)
+
+      console.log(`onMount completedRounds ${completedRounds}`);
+
+      for (let n = 0; n < completedRounds; n++) {
+        rounds[n] = PlayersCollection.find({
+          gameId: gameId,
+          round: { $gt: n },
+        }, {
+          sort: { nr: 1 }
+        }).fetch()
+      }
+
+      console.log("onMount rounds:");
+      console.log(rounds);
+
+      partCurrent.current = rounds[rounds.length - 1];
+      setRoundList(rounds);
+    });
   }, []);
 
-  console.log("partCurrent:");
-  console.log(partCurrent.current);
+  useEffect(() => {
+    if (isInitialMount.current <= 2) {
+      isInitialMount.current += 1;
+    } else {
+
+      console.log("useEffect");
+
+      const maxRound = PlayersCollection.findOne({ gameId: gameId }, {
+        sort: { round: -1 }
+      }).round;
+
+      const maxRoundCount = PlayersCollection.find({
+        gameId: gameId,
+        round: maxRound,
+      }).count();
+
+      const totalParticipants = PlayersCollection.find({ gameId: gameId }).count()
+
+      const completedRounds = maxRound - (maxRoundCount === Math.floor(totalParticipants / Math.pow(2, maxRound - 1)) ? 0 : 1)
+
+      const curRound = PlayersCollection.find({
+        gameId: gameId,
+        round: { $gt: completedRounds - 1 }
+      }, {
+        sort: { nr: 1 }
+      }).fetch()
+
+      partCurrent.current = curRound;
+
+      console.log("useEffect partCurrent");
+      console.log(partCurrent.current);
+
+      let isOdd = roundList[roundList.length - 1].length % 2 ? 1 : 0;
+
+      console.log("got here 1 ----------------------------");
+      console.log("partCurrent.current");
+      console.log(partCurrent.current);
+      console.log("roundList[roundList.length - 1]");
+      console.log(roundList[roundList.length - 1]);
+
+      if (partCurrent.current.length === (roundList[roundList.length - 1].length - isOdd) / 2) {
+        console.log("got here 2 ----------------------------");
+        console.log("partCurrent.current.length");
+        console.log(partCurrent.current.length);
+        console.log("roundList[roundList.length - 1].length");
+        console.log(roundList[roundList.length - 1].length);
+        if (partCurrent.current.length !== roundList[roundList.length - 1].length - isOdd) {
+          console.log("got here 3 ----------------------------");
+          if (isOdd) {
+            Meteor.call('nextRound', roundList[roundList.length - 1].name,
+              maxRound, gameId, gameType, (err, res) => {
+              Meteor.call('swap', gameId, gameType, (err, res) => {
+                partCurrent.current = PlayersCollection.find({
+                  gameId: gameId,
+                  round: { $gt: maxRound - 1 }
+                }, {
+                  sort: { nr: 1 }
+                }).fetch()
+                console.log("isOdd partCurrent:");
+                console.log(partCurrent.current);
+                setRoundList(roundList => [...roundList, partCurrent.current]);
+              })
+            })
+          } else {
+            console.log("isntOdd");
+            setRoundList(roundList => [...roundList, partCurrent.current]);
+          }
+        }
+      }
+    }
+  });
 
   const swap = ( arr1 ) => {
     arr = arr1.slice(0);
@@ -45,34 +129,25 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
     return arr;
   }
 
-  const rounds = Math.ceil(Math.log(part.length) / Math.log(2));
-
-  let x;
 
   const matchLoser = ( index ) => {
-    x = partCurrent.current.length % 2 ? 1 : 0;
     console.log(`${partCurrent.current[index].name} lost`);
     var loser = partCurrent.current[index].name;
     var winner = index % 2 ? index - 1 : index + 1;
+    console.log(`f winner ${partCurrent.current[winner].name} before`);
+    console.log(`f loser ${loser} before`);
     partCurrent.current[index].status = "lost";
-    Meteor.call('matchCompleted', partCurrent.current[winner].name, loser, gameType)
-    console.log(`winner ${partCurrent.current[winner].name}`);
-    console.log(`loser ${loser}`);
-    console.log('partCurrent array:');
-    console.log(partCurrent.current);
-    console.log('partList array:');
-    console.log(partList);
-    if (partCurrent.current.filter(x => x.status === "lost").length == (partCurrent.current.length - x) / 2) {
-      partCurrent.current = partCurrent.current.filter(a => a.status !== "lost");
-      if (x) partCurrent.current = swap(partCurrent.current);
-      console.log(`new partCurrent array`);
+    Meteor.call('matchCompleted', partCurrent.current[winner].name, loser, gameId, gameType, (err, res) => {
+      console.log(`f winner ${partCurrent.current[winner].name} after`);
+      console.log(`f loser ${loser} after`);
+      console.log('f partCurrent array:');
       console.log(partCurrent.current);
-      console.log(`partCurrent length ${partCurrent.current.length}`);
-      setPartList(partList => [...partList, partCurrent.current]);
-    }
+      console.log('f roundList array:');
+      console.log(roundList);
+    })
   };
 
-  const tournament = partList.map((a, index) =>
+  const tournament = roundList.map((a, index) =>
     <Round
       key={index}
       participants={a}

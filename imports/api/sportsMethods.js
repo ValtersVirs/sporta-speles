@@ -80,37 +80,77 @@ Meteor.methods({
     })
   },
   'firstRound'(gameId, gameType) {
-    gameType === "Team" ? (
-      TeamsCollection.update({
-        gameId: gameId,
-        round: { $exists: false }
-      }, {
-        $set: { round: 1, status: "playing" }
-      }, { multi: true })
-    ) : (
-      PlayersCollection.update({
-        gameId: gameId,
-        round: { $exists: false }
-      }, {
-        $set: { round: 1, status: "playing" }
-      }, { multi: true })
-    )
+    const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
+
+    collection.update({
+      gameId: gameId,
+      round: { $exists: false }
+    }, {
+      $set: { round: 1, status: "playing" }
+    }, { multi: true })
   },
-  'matchCompleted'(winner, loser, gameType) {
-    gameType === "Team" ? (
-      TeamsCollection.update({ name: winner }, {
-        $inc: { round: 1 }
-      }),
-      TeamsCollection.update({ name: loser }, {
-        $set: { status: "lost" }
+  'matchCompleted'(winner, loser, gameId, gameType) {
+    const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
+
+    collection.update({ name: winner, gameId: gameId }, {
+      $inc: { round: 1 }
+    }),
+    collection.update({ name: loser, gameId: gameId }, {
+      $set: { status: "lost" }
+    })
+  },
+  'nextRound'(name, round, gameId, gameType) {
+    const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
+
+    collection.update({ name: name, gameId: gameId }, {
+      $set: { round: round }
+    })
+  },
+  'setId'(gameId, gameType) {
+    let count = 0;
+    const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
+
+    collection.find({ gameId: gameId }, {
+      sort: { _id: 1 }
+    }).forEach(x => {
+      count++;
+      collection.update({
+        _id: x._id,
+        nr: { $exists: false }
+      }, {
+        $set: { nr: count }
       })
-    ) : (
-      PlayersCollection.update({ name: winner }, {
-        $inc: { round: 1 }
-      }),
-      PlayersCollection.update({ name: loser }, {
-        $set: { status: "lost" }
-      })
-    )
+    })
+  },
+  'swap'(gameId, gameType) {
+    const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
+
+    let value1 = collection.findOne({
+      gameId: gameId,
+      status: "playing"
+     }, {
+      sort: { nr: 1 }
+    }).nr;
+    let value2 = collection.findOne({
+      gameId: gameId,
+      status: "playing"
+    }, {
+      sort: { nr: -1 }
+    }).nr;
+
+    collection.update({
+      gameId: gameId,
+      status: "playing",
+      nr: value1
+    }, {
+      $set: { nr: value2 }
+    })
+    collection.update({
+      gameId: gameId,
+      status: "playing",
+      nr: value2
+    }, {
+      $set: { nr: value1 }
+    })
   },
 })

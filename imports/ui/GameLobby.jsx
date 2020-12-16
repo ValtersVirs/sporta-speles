@@ -15,9 +15,9 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
     sort: { createdAt: 1 }
   }).fetch());
   const curPlayer = PlayersCollection.findOne( { name: playerName, gameId: gameId } );
-  const curGamePlayers = PlayersCollection.find({ gameId: gameId }, {
+  const curGamePlayers = useTracker( () => PlayersCollection.find({ gameId: gameId }, {
     sort: { createdAt: 1 }
-  }).fetch();
+  }).fetch());
 
   const tournamentParticipants = (game.gameType === "Team" ? (
     curGameTeams
