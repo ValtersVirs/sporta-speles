@@ -7,6 +7,7 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
   const [roundList, setRoundList] = useState([""]);
   const partCurrent = useRef("");
   const isInitialMount = useRef(0);
+  const callOnce = useRef(0);
 
   const [update, setUpdate] = useState(0);
 
@@ -69,7 +70,29 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
 
       const totalParticipants = PlayersCollection.find({ gameId: gameId }).count()
 
-      const completedRounds = maxRound - (maxRoundCount === Math.floor(totalParticipants / Math.pow(2, maxRound - 1)) ? 0 : 1)
+      const completedRounds = maxRound - (maxRoundCount >= Math.floor(totalParticipants / Math.pow(2, maxRound - 1)) ? 0 : 1)
+
+      let x = totalParticipants
+      let i = 0
+      let count = 0
+      let participantCount = 0
+
+      while (x > 1 || i == 1) {
+        participantCount = x
+        if (x % 2) {
+          if (i == 1) {
+            x = x + 1
+            participantCount = x
+            i = 0
+          } else {
+            x = x - 1
+            participantCount = x
+            i = 1
+          }
+        }
+        x = x / 2
+        count++
+      }
 
       const curRound = PlayersCollection.find({
         gameId: gameId,
@@ -82,6 +105,23 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
 
       console.log("useEffect partCurrent");
       console.log(partCurrent.current);
+    }
+  });
+
+  useEffect(() => {
+    if (!isInitialMount.current <= 2) {
+      const maxRound = PlayersCollection.findOne({ gameId: gameId }, {
+        sort: { round: -1 }
+      }).round;
+
+      const maxRoundCount = PlayersCollection.find({
+        gameId: gameId,
+        round: maxRound,
+      }).count();
+
+      const totalParticipants = PlayersCollection.find({ gameId: gameId }).count()
+
+      const completedRounds = maxRound - (maxRoundCount >= Math.floor(totalParticipants / Math.pow(2, maxRound - 1)) ? 0 : 1)
 
       let isOdd = roundList[roundList.length - 1].length % 2 ? 1 : 0;
 
@@ -99,43 +139,49 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
         console.log(roundList[roundList.length - 1].length);
         if (partCurrent.current.length !== roundList[roundList.length - 1].length - isOdd) {
           console.log("got here 3 ----------------------------");
-          if (isOdd) {
-            Meteor.call('nextRound', roundList[roundList.length - 1].name,
-              maxRound, gameId, gameType, (err, res) => {
-              Meteor.call('swap', gameId, gameType, (err, res) => {
+          callOnce.current = callOnce.current + 1;
+          console.log(`callOnce = ${callOnce.current}`);
+          console.log(`isOdd = ${isOdd}`);
+          if (isOdd && callOnce.current === 1 && partCurrent.current !== roundList[roundList.length -1]) {
+            console.log("isOdd called");
+            console.log(`maxRound = ${maxRound}`);
+            Meteor.call('oddParticipant', gameId, gameType, maxRound, (err, res) => {
+              if (err) {
+                console.log('nextRound error');
+                console.log(err);
+              } else {
                 partCurrent.current = PlayersCollection.find({
                   gameId: gameId,
                   round: { $gt: maxRound - 1 }
                 }, {
                   sort: { nr: 1 }
                 }).fetch()
-                console.log("isOdd partCurrent:");
+                console.log("isOdd partCurrent");
                 console.log(partCurrent.current);
+                callOnce.current = 0;
                 setRoundList(roundList => [...roundList, partCurrent.current]);
-              })
+              }
             })
-          } else {
+          } else if (callOnce.current === 1) {
             console.log("isntOdd");
+            callOnce.current = 0;
             setRoundList(roundList => [...roundList, partCurrent.current]);
           }
         }
       }
     }
-  });
-
-  const swap = ( arr1 ) => {
-    arr = arr1.slice(0);
-    [arr[0], arr[arr.length - 1]] = [arr[arr.length - 1], arr[0]];
-    return arr;
-  }
-
+  }, [partCurrent.current])
 
   const matchLoser = ( index ) => {
-    console.log(`${partCurrent.current[index].name} lost`);
+    console.log("f -------------------");
+    console.log("f partCurrent.current:");
+    console.log(partCurrent.current);
+    console.log("f roundList[last]");
+    console.log(roundList[roundList.length - 1]);
     var loser = partCurrent.current[index].name;
     var winner = index % 2 ? index - 1 : index + 1;
-    console.log(`f winner ${partCurrent.current[winner].name} before`);
-    console.log(`f loser ${loser} before`);
+    console.log(`f winner ${partCurrent.current[winner].name}, index ${winner} before`);
+    console.log(`f loser ${loser}, index ${index} before`);
     partCurrent.current[index].status = "lost";
     Meteor.call('matchCompleted', partCurrent.current[winner].name, loser, gameId, gameType, (err, res) => {
       console.log(`f winner ${partCurrent.current[winner].name} after`);
@@ -144,6 +190,8 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
       console.log(partCurrent.current);
       console.log('f roundList array:');
       console.log(roundList);
+      console.log("f PlayersCollection.find()");
+      console.log(PlayersCollection.find({ gameId: gameId }).fetch());
     })
   };
 
@@ -194,10 +242,14 @@ const Round = ({ participants, roundNr, matchLoser }) => {
   } else {
     for (let i = 0; i < (participants.length - a) / 2; i++) {
       let match = []
+      let disabled = false
       for (let j = 0 + (2 * i); j < 2 + (2 * i); j++) {
+        if (PlayersCollection.findOne({ name: participants[j].name }).status === "lost") {
+          disabled = true;
+        }
         match.push(<Participant key={participants[j].name} participant={participants[j]} />)
       }
-      round.push(<Match key={i} match={match} matchNr={i} matchLoser={matchLoser} />)
+      round.push(<Match key={i} match={match} matchNr={i} disabled={disabled} matchLoser={matchLoser} />)
     }
     return (
       <div className="round">
@@ -208,8 +260,8 @@ const Round = ({ participants, roundNr, matchLoser }) => {
   }
 }
 
-const Match = ({ match, matchNr, matchLoser }) => {
-  const [isDisabled, setIsDisabled] = useState(false);
+const Match = ({ match, matchNr, disabled, matchLoser }) => {
+  const [isDisabled, setIsDisabled] = useState(disabled);
 
   const handleClick = (i) => {
     matchLoser(i + (2 * matchNr))

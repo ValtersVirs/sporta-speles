@@ -65,20 +65,6 @@ Meteor.methods({
   'removeUser'() {
     Meteor.users.remove(this.userId);
   },
-  'setLoser'(name, gameType) {
-  /*  if (gameType === "Team") {
-      TeamsCollection.update({ name: name }, {
-        $set: { status: "lost" }
-      })
-    } else {
-    PlayersCollection.update({ name: name }, {
-      $set: { status: "lost" }
-    })}
-  */
-    PlayersCollection.update({ name: name }, {
-      $set: { playerStatus: "lost" }
-    })
-  },
   'firstRound'(gameId, gameType) {
     const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
 
@@ -99,31 +85,19 @@ Meteor.methods({
       $set: { status: "lost" }
     })
   },
-  'nextRound'(name, round, gameId, gameType) {
+  'oddParticipant'(gameId, gameType, round) {
     const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
 
-    collection.update({ name: name, gameId: gameId }, {
+    const nr = collection.findOne({
+      gameId: gameId,
+      status: "playing"
+     }, {
+      sort: { nr: -1 }
+    }).nr;
+
+    collection.update({ gameId: gameId, nr: nr }, {
       $set: { round: round }
     })
-  },
-  'setId'(gameId, gameType) {
-    let count = 0;
-    const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
-
-    collection.find({ gameId: gameId }, {
-      sort: { _id: 1 }
-    }).forEach(x => {
-      count++;
-      collection.update({
-        _id: x._id,
-        nr: { $exists: false }
-      }, {
-        $set: { nr: count }
-      })
-    })
-  },
-  'swap'(gameId, gameType) {
-    const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
 
     let value1 = collection.findOne({
       gameId: gameId,
@@ -151,6 +125,22 @@ Meteor.methods({
       nr: value2
     }, {
       $set: { nr: value1 }
+    })
+  },
+  'setId'(gameId, gameType) {
+    let count = 0;
+    const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
+
+    collection.find({ gameId: gameId }, {
+      sort: { _id: 1 }
+    }).forEach(x => {
+      count++;
+      collection.update({
+        _id: x._id,
+        nr: { $exists: false }
+      }, {
+        $set: { nr: count }
+      })
     })
   },
 })
