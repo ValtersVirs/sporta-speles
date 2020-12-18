@@ -23,6 +23,11 @@ export const PlayerJoin = ({ user, deletePlayer, goToMenu }) => {
     if (!gameId || GamesCollection.find({ gameId: gameId }).count() === 0)
       return;
 
+    if (GamesCollection.findOne({ gameId: gameId}).gameStart === true) {
+      alert("Game has already begun")
+      return;
+    }
+
     Meteor.call('playerInsert', user.username, gameId, false, (err, res) => {
       setIsFilledIn(true);
     });

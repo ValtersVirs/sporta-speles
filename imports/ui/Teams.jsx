@@ -2,7 +2,7 @@ import React from 'react';
 import { Meteor } from 'meteor/meteor';
 import { TeamsCollection } from '/imports/api/TeamsCollection';
 
-export const Teams = ({ gameId, player }) => {
+export const Teams = ({ gameId, player, maxPlayers }) => {
   const curGameTeams = TeamsCollection.find({ gameId: gameId }, {
     sort: { createdAt: 1 }
   }).fetch();
@@ -16,13 +16,14 @@ export const Teams = ({ gameId, player }) => {
           team={team}
           player={player}
           gameId={gameId}
+          maxPlayers={maxPlayers}
         />) }
       </ul>
     </div>
   );
 }
 
-const Team = ({ teams, team, player, gameId }) => {
+const Team = ({ teams, team, player, gameId, maxPlayers }) => {
 
   const handleJoinClick = () => {
     for (let n = 0; n < teams.length; n++) {
@@ -44,6 +45,10 @@ const Team = ({ teams, team, player, gameId }) => {
   } else {
     var displayJoin = "block";
     var displayLeave = "none";
+  }
+
+  if (team.players.length === maxPlayers) {
+    displayJoin = "none";
   }
 
   return (

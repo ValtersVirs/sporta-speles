@@ -98,6 +98,7 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
                 <Teams
                   gameId={game.gameId}
                   player={curPlayer}
+                  maxPlayers={game.teamSize}
                 />
               ) : "" }
 

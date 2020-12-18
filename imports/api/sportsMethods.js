@@ -11,12 +11,13 @@ Meteor.methods({
       createdAt: new Date()
     });
   },
-  'gameCreate'(gameId, select, isOvertime, teamNumber) {
+  'gameCreate'(gameId, select, isOvertime, teamSize, teamNumber) {
     if (select === "Team") {
       GamesCollection.insert({
         gameId: gameId,
         gameType: select,
         isOvertime: isOvertime,
+        teamSize: teamSize,
         numberOfTeams: teamNumber,
       });
 
@@ -72,14 +73,14 @@ Meteor.methods({
       gameId: gameId,
       round: { $exists: false }
     }, {
-      $set: { round: 1, status: "playing" }
+      $set: { round: 1, status: "playing", points: 0 }
     }, { multi: true })
   },
   'matchCompleted'(winner, loser, gameId, gameType) {
     const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
 
     collection.update({ name: winner, gameId: gameId }, {
-      $inc: { round: 1 }
+      $inc: { round: 1, points: 1 }
     }),
     collection.update({ name: loser, gameId: gameId }, {
       $set: { status: "lost" }

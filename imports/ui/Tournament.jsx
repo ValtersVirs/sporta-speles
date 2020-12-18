@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Meteor } from 'meteor/meteor';
 import { PlayersCollection } from '/imports/api/PlayersCollection';
+import { TeamsCollection } from '/imports/api/TeamsCollection';
 import { Player } from './Player';
 
 export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
   const [roundList, setRoundList] = useState([""]);
   const partCurrent = useRef("");
-  const isInitialMount = useRef(0);
   const callOnce = useRef(0);
-
   const [update, setUpdate] = useState(0);
+  const [winner, setWinner] = useState(false);
+  const temp = useRef(false);
+
+  const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
 
   console.log("main roundList");
   console.log(roundList);
@@ -20,23 +23,23 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
   useEffect(() => {
     Meteor.call('setId', gameId, gameType, (err, res) => {
       var rounds = []
-      const maxRound = PlayersCollection.findOne({ gameId: gameId }, {
+      const maxRound = collection.findOne({ gameId: gameId }, {
         sort: { round: -1 }
       }).round;
 
-      const maxRoundCount = PlayersCollection.find({
+      const maxRoundCount = collection.find({
         gameId: gameId,
         round: maxRound,
       }).count()
 
-      const totalParticipants = PlayersCollection.find({ gameId: gameId }).count()
+      const totalParticipants = collection.find({ gameId: gameId }).count()
 
       const completedRounds = maxRound - (maxRoundCount === Math.ceil(totalParticipants / Math.pow(2, maxRound - 1)) ? 0 : 1)
 
       console.log(`onMount completedRounds ${completedRounds}`);
 
       for (let n = 0; n < completedRounds; n++) {
-        rounds[n] = PlayersCollection.find({
+        rounds[n] = collection.find({
           gameId: gameId,
           round: { $gt: n },
         }, {
@@ -53,48 +56,52 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
   }, []);
 
   useEffect(() => {
-    if (isInitialMount.current <= 2) {
-      isInitialMount.current += 1;
-    } else {
-
       console.log("useEffect");
 
-      const maxRound = PlayersCollection.findOne({ gameId: gameId }, {
+      const maxRound = collection.findOne({ gameId: gameId }, {
         sort: { round: -1 }
       }).round;
 
-      const maxRoundCount = PlayersCollection.find({
+      const maxRoundCount = collection.find({
         gameId: gameId,
         round: maxRound,
       }).count();
 
-      const totalParticipants = PlayersCollection.find({ gameId: gameId }).count()
-
-      const completedRounds = maxRound - (maxRoundCount >= Math.floor(totalParticipants / Math.pow(2, maxRound - 1)) ? 0 : 1)
+      const totalParticipants = collection.find({ gameId: gameId }).count()
 
       let x = totalParticipants
       let i = 0
       let count = 0
       let participantCount = 0
 
-      while (x > 1 || i == 1) {
-        participantCount = x
+      console.log("----------------------- calc 1");
+
+      while (count < maxRound - 1) {
         if (x % 2) {
           if (i == 1) {
             x = x + 1
-            participantCount = x
             i = 0
           } else {
             x = x - 1
-            participantCount = x
             i = 1
           }
         }
+        participantCount = x / 2
         x = x / 2
+        console.log(`participantCount = ${participantCount}`);
+
         count++
       }
 
-      const curRound = PlayersCollection.find({
+      console.log(`maxRound = ${maxRound}`);
+      console.log(`maxRoundCount = ${maxRoundCount}`);
+      console.log(`participantCount = ${participantCount}`);
+
+      const completedRounds = maxRound - (maxRoundCount >= participantCount ? 0 : 1)
+
+      console.log(`completedRounds = ${completedRounds}`);
+
+      const curRound = collection.find({
         gameId: gameId,
         round: { $gt: completedRounds - 1 }
       }, {
@@ -105,25 +112,54 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
 
       console.log("useEffect partCurrent");
       console.log(partCurrent.current);
-    }
   });
 
   useEffect(() => {
-    if (!isInitialMount.current <= 2) {
-      const maxRound = PlayersCollection.findOne({ gameId: gameId }, {
+      const maxRound = collection.findOne({ gameId: gameId }, {
         sort: { round: -1 }
       }).round;
 
-      const maxRoundCount = PlayersCollection.find({
+      const maxRoundCount = collection.find({
         gameId: gameId,
         round: maxRound,
       }).count();
 
-      const totalParticipants = PlayersCollection.find({ gameId: gameId }).count()
+      const totalParticipants = collection.find({ gameId: gameId }).count()
 
-      const completedRounds = maxRound - (maxRoundCount >= Math.floor(totalParticipants / Math.pow(2, maxRound - 1)) ? 0 : 1)
+      let x = totalParticipants
+      let i = 0
+      let count = 0
+      let participantCount = 0
+
+      console.log("----------------------- calc 2");
+
+      while (count < maxRound - 1) {
+        if (x % 2) {
+          if (i == 1) {
+            x = x + 1
+            i = 0
+          } else {
+            x = x - 1
+            i = 1
+          }
+        }
+        participantCount = x / 2
+        x = x / 2
+        console.log(`participantCount = ${participantCount}`);
+
+        count++
+      }
 
       let isOdd = roundList[roundList.length - 1].length % 2 ? 1 : 0;
+
+      console.log(`maxRound = ${maxRound}`);
+      console.log(`maxRoundCount = ${maxRoundCount}`);
+      console.log(`participantCount = ${participantCount}`);
+      console.log(`isOdd = ${isOdd}`);
+
+      const completedRounds = maxRound - (maxRoundCount >= participantCount ? 0 : 1)
+
+      console.log(`completedRounds = ${completedRounds}`);
 
       console.log("got here 1 ----------------------------");
       console.log("partCurrent.current");
@@ -150,7 +186,7 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
                 console.log('nextRound error');
                 console.log(err);
               } else {
-                partCurrent.current = PlayersCollection.find({
+                partCurrent.current = collection.find({
                   gameId: gameId,
                   round: { $gt: maxRound - 1 }
                 }, {
@@ -169,7 +205,6 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
           }
         }
       }
-    }
   }, [partCurrent.current])
 
   const matchLoser = ( index ) => {
@@ -190,8 +225,8 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
       console.log(partCurrent.current);
       console.log('f roundList array:');
       console.log(roundList);
-      console.log("f PlayersCollection.find()");
-      console.log(PlayersCollection.find({ gameId: gameId }).fetch());
+      console.log("f collection.find()");
+      console.log(collection.find({ gameId: gameId }).fetch());
     })
   };
 
@@ -200,9 +235,15 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
       key={index}
       participants={a}
       roundNr={index + 1}
+      collection={collection}
       matchLoser={matchLoser}
     />
   )
+
+  if (roundList[roundList.length - 1].length === 1 && temp.current === false) {
+    temp.current = true
+    setWinner(true)
+  }
 
   return (
     <div>
@@ -212,6 +253,14 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
       {isAdmin ? (
           <button onClick={endGame}>End game</button>
       ) : ""}
+      {winner ? (
+          <Leaderboard
+            collection={collection}
+            gameId={gameId}
+          />
+      ) : (
+        ""
+      )}
     </div>
   );
 };
@@ -230,7 +279,34 @@ const Participants = ({ part }) => {
   );
 };
 
-const Round = ({ participants, roundNr, matchLoser }) => {
+const Leaderboard = ({ collection, gameId }) => {
+  const participants = collection.find({ gameId }, {
+    sort: { points: -1, _id: 1 }
+  })
+
+  return (
+    <div>
+      Leaderboard
+      <ul>
+        { participants.map((p, index) => <LeaderboardPlayer
+            key={p._id}
+            player={p}
+            place={index + 1}
+          />) }
+      </ul>
+    </div>
+  );
+}
+
+const LeaderboardPlayer = ({ player, place }) => {
+  return (
+    <div>
+      <span>Place {place} | Points: {player.points} | Name: {player.name}</span>
+    </div>
+  );
+}
+
+const Round = ({ participants, roundNr, collection, matchLoser }) => {
   let round = []
 
   let a = 0;
@@ -244,7 +320,7 @@ const Round = ({ participants, roundNr, matchLoser }) => {
       let match = []
       let disabled = false
       for (let j = 0 + (2 * i); j < 2 + (2 * i); j++) {
-        if (PlayersCollection.findOne({ name: participants[j].name }).status === "lost") {
+        if (collection.findOne({ name: participants[j].name }).status === "lost") {
           disabled = true;
         }
         match.push(<Participant key={participants[j].name} participant={participants[j]} />)

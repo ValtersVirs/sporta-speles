@@ -19,7 +19,7 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
     }
 
     Meteor.call('playerInsert', user.username, randomId, true, (err, res) => {
-      Meteor.call('gameCreate', randomId, select, isChecked, teamNumber, (err, res) => {
+      Meteor.call('gameCreate', randomId, select, isChecked, teamSize, teamNumber, (err, res) => {
         setIsFilledIn(true);
       })}
     )
