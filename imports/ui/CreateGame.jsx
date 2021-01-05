@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random'
+import { PlayersCollection } from '/imports/api/PlayersCollection';
 import { GameLobby } from './GameLobby';
 
 export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
@@ -12,17 +13,40 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
   const [randomId, setRandomId] = useState(Random.id(6).toUpperCase());
 
   const handleSubmit = e => {
+    const createGame = () => {
+      Meteor.call('playerInsert', user.username, randomId, true, (err, res) => {
+        Meteor.call('gameCreate', randomId, select, isChecked, teamSize, teamNumber, (err, res) => {
+          setIsFilledIn(true);
+        })}
+      )
+    }
+
     e.preventDefault();
 
     if (select === "Team") {
       if (!teamNumber || !teamSize) return;
     }
 
-    Meteor.call('playerInsert', user.username, randomId, true, (err, res) => {
-      Meteor.call('gameCreate', randomId, select, isChecked, teamSize, teamNumber, (err, res) => {
-        setIsFilledIn(true);
-      })}
-    )
+    if (PlayersCollection.find({ name: user.username, inGame: true }).count() !== 0) {
+      //if isAdmin === true -> end game  else  leave game
+      if (PlayersCollection.findOne({ name: user.username, inGame: true }).isAdmin === true) {
+        //isAdmin === true
+        Meteor.call('gameEnd', PlayersCollection.findOne({ name: user.username, inGame: true }).gameId)
+        createGame();
+      } else {
+        //isAdmin === false
+        PlayersCollection.findOne({ name: user.username }).status ? (
+          //game has started
+          Meteor.call('leaveStartedGame', user.username)
+        ) : (
+          //game hasnt started
+          Meteor.call('leaveGame', user.username)
+        )
+        createGame();
+      }
+    } else {
+      createGame();
+    }
   };
 
   const onChangeNumber = e => {

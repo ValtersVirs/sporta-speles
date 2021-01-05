@@ -8,6 +8,7 @@ Meteor.methods({
       name: name,
       gameId: gameId,
       isAdmin: isAdmin,
+      inGame: true,
       createdAt: new Date()
     });
   },
@@ -73,7 +74,7 @@ Meteor.methods({
       gameId: gameId,
       round: { $exists: false }
     }, {
-      $set: { round: 1, status: "playing", points: 0 }
+      $set: { round: 1, status: "playing", points: 0, winner: false }
     }, { multi: true })
   },
   'matchCompleted'(winner, loser, gameId, gameType) {
@@ -142,6 +143,21 @@ Meteor.methods({
       }, {
         $set: { nr: count }
       })
+    })
+  },
+  'setWinner'(gameId, gameType, name) {
+    const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
+
+    collection.update({ gameId: gameId, name: name }, {
+      $set: { winner: true }
+    })
+  },
+  'leaveGame'(name) {
+    PlayersCollection.remove({ name: name, inGame: true });
+  },
+  'leaveStartedGame'(name) {
+    PlayersCollection.update({ name: name, inGame: true }, {
+      $set: { inGame: false }
     })
   },
 })

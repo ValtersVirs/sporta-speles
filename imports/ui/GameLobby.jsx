@@ -32,7 +32,7 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
   }
 
   const leaveGame = () => {
-    Meteor.call('playerDelete', curPlayer._id, (err, res) => {
+    Meteor.call('leaveGame', curPlayer.name, (err, res) => {
       goToMenu();
     })
   }
@@ -58,6 +58,8 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
               gameId={game.gameId}
               gameType={game.gameType}
               endGame={endGame}
+              goToMenu={goToMenu}
+              name={curPlayer.name}
               isAdmin={curPlayer.isAdmin}
             />
           ) : (

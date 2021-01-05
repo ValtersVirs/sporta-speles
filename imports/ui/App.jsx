@@ -60,6 +60,9 @@ export const App = () => {
                 </div>
                 <div>
                   <button className="menu-buttons" onClick={() => {
+                    if (PlayersCollection.find({ name: user.username, inGame: true }).count() !== 0) {
+                      alert(`You are currently in game ${PlayersCollection.findOne({ name: user.username }).gameId}.\nBy creating a new game you will leave/end current game`)
+                    }
                     setCreate(!join);
                     setShowButtons(false)
                   }}>Create Game</button>

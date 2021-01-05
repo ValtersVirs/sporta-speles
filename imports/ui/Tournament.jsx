@@ -4,7 +4,7 @@ import { PlayersCollection } from '/imports/api/PlayersCollection';
 import { TeamsCollection } from '/imports/api/TeamsCollection';
 import { Player } from './Player';
 
-export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
+export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, isAdmin }) => {
   const [roundList, setRoundList] = useState([""]);
   const partCurrent = useRef("");
   const callOnce = useRef(0);
@@ -235,6 +235,8 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
       key={index}
       participants={a}
       roundNr={index + 1}
+      gameId={gameId}
+      gameType={gameType}
       collection={collection}
       matchLoser={matchLoser}
     />
@@ -245,14 +247,22 @@ export const Tournament = ({ part, gameId, gameType, endGame, isAdmin }) => {
     setWinner(true)
   }
 
+  const leaveGame = () => {
+    Meteor.call('leaveStartedGame', name, (err, res) => {
+      goToMenu();
+    })
+  }
+
   return (
     <div>
       Tournament
       <div>{tournament}</div>
       <div><Participants part={part}/></div>
       {isAdmin ? (
-          <button onClick={endGame}>End game</button>
-      ) : ""}
+        <button onClick={endGame}>End game</button>
+      ) : (
+        <button onClick={leaveGame}>Leave game</button>
+      )}
       {winner ? (
           <Leaderboard
             collection={collection}
@@ -281,7 +291,7 @@ const Participants = ({ part }) => {
 
 const Leaderboard = ({ collection, gameId }) => {
   const participants = collection.find({ gameId }, {
-    sort: { points: -1, _id: 1 }
+    sort: { winner: -1, points: -1, _id: 1 }
   })
 
   return (
@@ -306,7 +316,7 @@ const LeaderboardPlayer = ({ player, place }) => {
   );
 }
 
-const Round = ({ participants, roundNr, collection, matchLoser }) => {
+const Round = ({ participants, roundNr, gameId, gameType, collection, matchLoser }) => {
   let round = []
 
   let a = 0;
@@ -314,19 +324,26 @@ const Round = ({ participants, roundNr, collection, matchLoser }) => {
   if (participants.length % 2) a = 1;
 
   if (participants.length === 1) {
-    return <div>Winner {participants[0].name}</div>
+    const winnerCount = collection.find({ gameId: gameId, winner: true }).count()
+
+    if (winnerCount === 0) Meteor.call('setWinner', gameId, gameType, participants[0].name)
+
+    return (
+      <div>Winner {participants[0].name}</div>
+    );
   } else {
     for (let i = 0; i < (participants.length - a) / 2; i++) {
       let match = []
       let disabled = false
       for (let j = 0 + (2 * i); j < 2 + (2 * i); j++) {
-        if (collection.findOne({ name: participants[j].name }).status === "lost") {
+        if (collection.findOne({ name: participants[j].name, gameId: gameId }).status === "lost") {
           disabled = true;
         }
         match.push(<Participant key={participants[j].name} participant={participants[j]} />)
       }
       round.push(<Match key={i} match={match} matchNr={i} disabled={disabled} matchLoser={matchLoser} />)
     }
+
     return (
       <div className="round">
         <div>Round {roundNr}</div>

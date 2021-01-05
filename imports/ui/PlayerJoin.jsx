@@ -12,9 +12,9 @@ export const PlayerJoin = ({ user, deletePlayer, goToMenu }) => {
   const [playerId, setPlayerId] = useState("");
   const [isFilledIn, setIsFilledIn] = useState(false);
 
-  if (PlayersCollection.find({ name: user.username }).count() !== 0 && !gameId) {
+  if (PlayersCollection.find({ name: user.username, inGame: true }).count() !== 0 && !gameId) {
     setIsFilledIn(true);
-    setGameId(PlayersCollection.findOne({ name: user.username }).gameId);
+    setGameId(PlayersCollection.findOne({ name: user.username, inGame: true }).gameId);
   }
 
   const handleSubmit = e => {
