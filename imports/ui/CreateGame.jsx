@@ -8,6 +8,7 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
   const [select, setSelect] = useState('Individual');
   const [teamSize, setTeamSize] = useState('');
   const [teamNumber, setTeamNumber] = useState('');
+  const [scoreType, setScoreType] = useState('Time');
   const [isChecked, setIsChecked] = useState(false);
   const [isFilledIn, setIsFilledIn] = useState(false);
   const [randomId, setRandomId] = useState(Random.id(6).toUpperCase());
@@ -15,7 +16,7 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
   const handleSubmit = e => {
     const createGame = () => {
       Meteor.call('playerInsert', user.username, randomId, true, (err, res) => {
-        Meteor.call('gameCreate', randomId, select, isChecked, teamSize, teamNumber, (err, res) => {
+        Meteor.call('gameCreate', randomId, select, scoreType, isChecked, teamSize, teamNumber, (err, res) => {
           setIsFilledIn(true);
         })}
       )
@@ -105,7 +106,18 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
           </div>
         );
       case "Leaderboard":
-        return <div>Leaderboard</div>
+        return (
+          <div>
+            <div>
+              Leaderboard
+            </div>
+            <label>Scoring Type</label>
+            <select value={scoreType} onChange={e => setScoreType(e.target.value)}>
+              <option value="Time">Time</option>
+              <option value="Points">Points</option>
+            </select>
+          </div>
+        );
     }
   }
 

@@ -264,7 +264,7 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
         <button onClick={leaveGame}>Leave game</button>
       )}
       {winner ? (
-          <Leaderboard
+          <Ranking
             collection={collection}
             gameId={gameId}
           />
@@ -289,7 +289,7 @@ const Participants = ({ part }) => {
   );
 };
 
-const Leaderboard = ({ collection, gameId }) => {
+const Ranking = ({ collection, gameId }) => {
   const participants = collection.find({ gameId }, {
     sort: { winner: -1, points: -1, _id: 1 }
   })
@@ -298,7 +298,7 @@ const Leaderboard = ({ collection, gameId }) => {
     <div>
       Leaderboard
       <ul>
-        { participants.map((p, index) => <LeaderboardPlayer
+        { participants.map((p, index) => <RankingPlayer
             key={p._id}
             player={p}
             place={index + 1}
@@ -308,7 +308,7 @@ const Leaderboard = ({ collection, gameId }) => {
   );
 }
 
-const LeaderboardPlayer = ({ player, place }) => {
+const RankingPlayer = ({ player, place }) => {
   return (
     <div>
       <span>Place {place} | Points: {player.points} | Name: {player.name}</span>

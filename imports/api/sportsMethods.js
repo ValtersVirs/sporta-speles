@@ -12,7 +12,7 @@ Meteor.methods({
       createdAt: new Date()
     });
   },
-  'gameCreate'(gameId, select, isOvertime, teamSize, teamNumber) {
+  'gameCreate'(gameId, select, scoreType, isOvertime, teamSize, teamNumber) {
     if (select === "Team") {
       GamesCollection.insert({
         gameId: gameId,
@@ -30,6 +30,13 @@ Meteor.methods({
           createdAt: new Date(),
         });
       }
+    } else if (select === "Leaderboard") {
+      GamesCollection.insert({
+        gameId: gameId,
+        gameType: select,
+        scoreType: scoreType,
+        isOvertime: isOvertime,
+      });
     } else {
       GamesCollection.insert({
         gameId: gameId,
@@ -152,12 +159,35 @@ Meteor.methods({
       $set: { winner: true }
     })
   },
-  'leaveGame'(name) {
-    PlayersCollection.remove({ name: name, inGame: true });
+  'leaveGame'(player) {
+    TeamsCollection.update({ gameId: player.gameId }, {
+      $pull: { players: player.name }
+    }, { multi: true })
+    PlayersCollection.remove({ name: player.name, inGame: true });
   },
   'leaveStartedGame'(name) {
     PlayersCollection.update({ name: name, inGame: true }, {
       $set: { inGame: false }
+    })
+  },
+  'leaderboardStart'(gameId) {
+    PlayersCollection.update({ gameId }, {
+      $set: { points: "" }
+    }, { multi: true })
+  },
+  'addPoints'(player) {
+    PlayersCollection.update({ name: player.name, gameId: player.gameId }, {
+      $inc: { points: 1 }
+    })
+  },
+  'removePoints'(player) {
+    PlayersCollection.update({ name: player.name, gameId: player.gameId }, {
+      $inc: { points: -1 }
+    })
+  },
+  'updateScore'(player, score) {
+    PlayersCollection.update({ name: player.name, gameId: player.gameId }, {
+      $set: { points: score }
     })
   },
 })

@@ -7,6 +7,7 @@ import { TeamsCollection } from '/imports/api/TeamsCollection';
 import { Player } from './Player';
 import { Admin } from './Admin'
 import { Tournament } from './Tournament';
+import { Leaderboard } from './Leaderboard';
 import { Teams } from './Teams'
 
 export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
@@ -26,13 +27,19 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
   ))
 
   const gameStart = () => {
-    Meteor.call('firstRound', game.gameId, game.gameType, (err, res) => {
-      Meteor.call('gameStart', game.gameId);
-    })
+    game.gameType === "Leaderboard" ? (
+      Meteor.call('leaderboardStart', game.gameId, (err, res) => {
+        Meteor.call('gameStart', game.gameId);
+      })
+    ) : (
+      Meteor.call('firstRound', game.gameId, game.gameType, (err, res) => {
+        Meteor.call('gameStart', game.gameId);
+      })
+    )
   }
 
   const leaveGame = () => {
-    Meteor.call('leaveGame', curPlayer.name, (err, res) => {
+    Meteor.call('leaveGame', curPlayer, (err, res) => {
       goToMenu();
     })
   }
@@ -53,15 +60,25 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
       {curPlayer ? (
         <Fragment>
           {game.gameStart ? (
-            <Tournament
-              part={tournamentParticipants}
-              gameId={game.gameId}
-              gameType={game.gameType}
-              endGame={endGame}
-              goToMenu={goToMenu}
-              name={curPlayer.name}
-              isAdmin={curPlayer.isAdmin}
-            />
+            <Fragment>
+              {game.gameType === "Leaderboard" ? (
+                <Leaderboard
+                  gameId={gameId}
+                  isAdmin={curPlayer.isAdmin}
+                  endGame={endGame}
+                />
+              ) : (
+                <Tournament
+                  part={tournamentParticipants}
+                  gameId={game.gameId}
+                  gameType={game.gameType}
+                  endGame={endGame}
+                  goToMenu={goToMenu}
+                  name={curPlayer.name}
+                  isAdmin={curPlayer.isAdmin}
+                />
+              )}
+            </Fragment>
           ) : (
             <div>
               <div>
