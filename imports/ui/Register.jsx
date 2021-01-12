@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import React, { useState } from 'react';
 
-export const Register = ({ goToMenu }) => {
+export const Register = ({ goToMenu, goToLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -46,6 +46,7 @@ export const Register = ({ goToMenu }) => {
       </div>
 
       <button type="submit">Register</button>
+      <button onClick={goToLogin}>Back</button>
     </form>
   );
 

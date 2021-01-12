@@ -264,10 +264,10 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
         <button onClick={leaveGame}>Leave game</button>
       )}
       {winner ? (
-          <Ranking
-            collection={collection}
-            gameId={gameId}
-          />
+        <Ranking
+          collection={collection}
+          gameId={gameId}
+        />
       ) : (
         ""
       )}

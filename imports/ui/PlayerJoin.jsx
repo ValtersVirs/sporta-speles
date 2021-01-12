@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Tracker } from 'meteor/tracker'
 import { useTracker } from 'meteor/react-meteor-data';
@@ -34,35 +34,35 @@ export const PlayerJoin = ({ user, deletePlayer, goToMenu }) => {
   };
 
   return (
-    <div className="player-join">
+    <Fragment>
       {isFilledIn ? (
-        <div>
-          <div>
-            <GameLobby
-              playerName={user.username}
-              gameId={gameId}
-              deletePlayer={deletePlayer}
-              goToMenu={goToMenu}
-            />
-          </div>
-
-        </div>
+        <GameLobby
+          playerName={user.username}
+          gameId={gameId}
+          deletePlayer={deletePlayer}
+          goToMenu={goToMenu}
+        />
       ) : (
-        <form className="fill-form" onSubmit={handleSubmit}>
-          <div>
-            <input
-              type="text"
-              placeholder="Enter game id"
-              value={gameId}
-              onChange={(e) => setGameId(e.target.value.toUpperCase())}
-            />
-          </div>
-
-          <button type="submit">Join</button>
-
-          <button onClick={goToMenu}>Back</button>
-        </form>
+        <div class="d-flex justify-content-center">
+          <form class="row gap-3 size" onSubmit={handleSubmit}>
+            <div class="col-12 d-flex justify-content-center">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Game id"
+                value={gameId}
+                onChange={(e) => setGameId(e.target.value.toUpperCase())}
+              />
+            </div>
+            <div class="col-12 d-flex justify-content-center">
+              <button type="submit" class="btn btn-primary size">Join</button>
+            </div>
+            <div class="col-12 d-flex justify-content-center">
+              <button type="button" class="btn btn-secondary" onClick={goToMenu}>Back</button>
+            </div>
+          </form>
+        </div>
       )}
-    </div>
+    </Fragment>
   );
 };

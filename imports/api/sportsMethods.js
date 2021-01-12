@@ -190,4 +190,14 @@ Meteor.methods({
       $set: { points: score }
     })
   },
+  'leaveLeaderboardGame'(name) {
+    PlayersCollection.update({ name: name, inGame: true }, {
+      $set: { inGame: false, points: "DQ" }
+    })
+  },
+  'disqualify'(name) {
+    PlayersCollection.update({ name: name, inGame: true }, {
+      $set: { points: "DQ" }
+    })
+  },
 })

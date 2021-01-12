@@ -15,10 +15,17 @@ export const Login = ({ goToMenu }) => {
     Meteor.loginWithPassword(username, password);
   };
 
+  const goToLogin = () => {
+    setRegister(false)
+  }
+
   return (
     <Fragment>
       {register ? (
-        <Register goToMenu={goToMenu} />
+        <Register
+          goToMenu={goToMenu}
+          goToLogin={goToLogin} 
+        />
       ) : (
         <div className="login">
           <form onSubmit={handleSubmit} className="login-form">

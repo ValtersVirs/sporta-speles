@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.11.2",
+    "@popperjs/core": "^2.6.0",
     "bcrypt": "^5.0.0",
+    "bootstrap": "^5.0.0-beta1",
     "meteor-node-stubs": "^1.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",

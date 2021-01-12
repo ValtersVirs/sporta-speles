@@ -55,6 +55,12 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
     alert("You have been removed from the game");
   }
 
+  var gameType
+  if (game.gameType === "Individual") gameType = "Individual game"
+  else if (game.gameType === "Team") gameType = "Team game"
+  else if (game.gameType === "Leaderboard") gameType = "Leaderboard"
+
+
   return (
     <div>
       {curPlayer ? (
@@ -64,8 +70,10 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
               {game.gameType === "Leaderboard" ? (
                 <Leaderboard
                   gameId={gameId}
+                  name={curPlayer.name}
                   isAdmin={curPlayer.isAdmin}
                   endGame={endGame}
+                  goToMenu={goToMenu}
                 />
               ) : (
                 <Tournament
@@ -80,39 +88,38 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
               )}
             </Fragment>
           ) : (
-            <div>
-              <div>
-                <ul>
-                  <li>Player: {curPlayer.name}</li>
-                  <li>Code: {game.gameId}</li>
-                  <li>Overtime: {game.isOvertime ? "✔" : "✘"}</li>
-                  <li>Type: {game.gameType}</li>
-                </ul>
-              </div>
-              <div>
-              </div>
-              Current game players {curGamePlayers.length}
-              {curPlayer.isAdmin ? (
-                <Fragment>
-                  <ul className="players">
-                    { curGamePlayers.map(player => <Admin
-                      key={ player._id }
-                      player={ player }
-                      onDeleteClick={ deletePlayer }
-                    />) }
-                  </ul>
+            <div class="d-flex align-items-center flex-column">
+              <div class="d-flex align-items-center flex-column mb-3">
+                <p class="h1">{game.gameId}</p>
+                <p class="mb-0">{gameType}</p>
+                <p>Overtime {game.isOvertime ? <span class="badge bg-success">✓</span> : <span class="badge bg-danger">✕</span>}</p>
+                {curPlayer.isAdmin ? (
+                  <Fragment>
+                    <p class="mb-1">Players in lobby <span class="badge bg-secondary">{curGamePlayers.length}</span></p>
+                    <ul className="players">
+                      { curGamePlayers.map(player => <Admin
+                        key={ player._id }
+                        player={ player }
+                        onDeleteClick={ deletePlayer }
+                      />) }
+                    </ul>
 
-                  <button onClick={gameStart}>Start game</button>
-                </Fragment>
-              ) : (
-                <ul className="players">
-                  { curGamePlayers.map(player => <Player
-                    key={ player._id }
-                    player={ player }
-                  />) }
-                </ul>
-              )}
+                    <button type="button" class="btn btn-primary" onClick={gameStart}>Start game</button>
+                  </Fragment>
+                ) : (
+                  <Fragment>
+                    <p class="mb-2">Players in lobby <span class="badge bg-secondary">{curGamePlayers.length}</span></p>
+                    <ul className="players">
+                      { curGamePlayers.map(player => <Player
+                        key={ player._id }
+                        player={ player }
+                      />) }
+                    </ul>
+                  </Fragment>
+                )}
+              </div>
 
+              <div>
               {game.gameType === "Team" ? (
                 <Teams
                   gameId={game.gameId}
@@ -120,12 +127,15 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
                   maxPlayers={game.teamSize}
                 />
               ) : "" }
+              </div>
 
+              <div>
               {curPlayer.isAdmin ? (
-                <button onClick={endGame}>End game</button>
+                <button type="button" class="btn btn-danger" onClick={endGame}>End game</button>
               ) : (
-                <button onClick={leaveGame}>Leave game</button>
+                <button type="button" class="btn btn-danger" onClick={leaveGame}>Leave game</button>
               )}
+              </div>
             </div>
           )}
         </Fragment>

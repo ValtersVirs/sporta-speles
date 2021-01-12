@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random'
 import { PlayersCollection } from '/imports/api/PlayersCollection';
@@ -68,61 +68,69 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
     switch (select) {
       case "Individual":
         return (
-          <div>
-          <label>Overtime</label>
-            <input
-              type="checkbox"
-              onClick={e =>setIsChecked(e.target.checked)}
-            />
+          <div class="col-12 mb-3">
+            <div class="form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                id="overtimeCheck"
+                onClick={e =>setIsChecked(e.target.checked)}
+              />
+              <label class="form-check-label" for="overtimeCheck">Overtime</label>
+            </div>
           </div>
         );
       case "Team":
         return (
-          <div>
-
-            <div>
+          <Fragment>
+            <div class="col-12 mb-3">
               <input
                 type="text"
+                class="form-control"
                 placeholder="Number of teams"
                 value={teamNumber}
                 onChange={onChangeNumber}
               />
             </div>
-
-            <div>
+            <div class="col-12 mb-3">
               <input
                 type="text"
+                class="form-control"
                 placeholder="Team size"
                 value={teamSize}
                 onChange={onChangeSize}
               />
             </div>
-
-            <label>Overtime</label>
-            <input
-              type="checkbox"
-              onClick={e =>setIsChecked(e.target.checked)}
-              />
-          </div>
+            <div class="col-12 mb-3">
+              <div class="form-check">
+                <input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="overtimeCheck"
+                  onClick={e =>setIsChecked(e.target.checked)}
+                />
+                <label class="form-check-label" for="overtimeCheck">Overtime</label>
+              </div>
+            </div>
+          </Fragment>
         );
       case "Leaderboard":
         return (
-          <div>
-            <div>
-              Leaderboard
+          <Fragment>
+            <label class="form-label">Scoring Type</label>
+            <div class="col-12 mb-3">
+              <select class="form-select" value={scoreType} onChange={e => setScoreType(e.target.value)}>
+                <option value="Time">Time</option>
+                <option value="Points">Points</option>
+              </select>
             </div>
-            <label>Scoring Type</label>
-            <select value={scoreType} onChange={e => setScoreType(e.target.value)}>
-              <option value="Time">Time</option>
-              <option value="Points">Points</option>
-            </select>
-          </div>
+          </Fragment>
         );
     }
   }
 
   return (
-    <div className="create-game">
+    <Fragment>
       {isFilledIn ? (
         <div>
             <GameLobby
@@ -133,23 +141,26 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
             />
         </div>
       ) : (
-        <form className="fill-form" onSubmit={handleSubmit}>
-          <div>
-            <label>Game Type</label>
-            <select value={select} onChange={e => setSelect(e.target.value)}>
-              <option value="Individual">Individual sport</option>
-              <option value="Team">Team sport</option>
-              <option value="Leaderboard">Leaderboard</option>
-            </select>
-          </div>
-
-          {selectedOptions(select)}
-
-          <button type="submit">Create Game</button>
-
-          <button onClick={goToMenu}>Back</button>
-        </form>
+        <div class="d-flex justify-content-center">
+          <form class="row size" onSubmit={handleSubmit}>
+            <label class="form-label" for="gameType">Game Type</label>
+            <div class="col-12 mb-3 d-flex justify-content-center">
+              <select class="form-select" id="gameType" value={select} onChange={e => setSelect(e.target.value)}>
+                <option value="Individual">Individual sport</option>
+                <option value="Team">Team sport</option>
+                <option value="Leaderboard">Leaderboard</option>
+              </select>
+            </div>
+            {selectedOptions(select)}
+            <div class="col-12 mb-3 d-flex justify-content-center">
+              <button type="submit" class="btn btn-primary size">Create Game</button>
+            </div>
+            <div class="col-12 d-flex justify-content-center">
+              <button type="button" class="btn btn-secondary" onClick={goToMenu}>Back</button>
+            </div>
+          </form>
+        </div>
       )}
-    </div>
+    </Fragment>
   );
 };

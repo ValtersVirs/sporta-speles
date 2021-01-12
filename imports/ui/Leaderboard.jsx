@@ -3,9 +3,17 @@ import { Meteor } from 'meteor/meteor';
 import { PlayersCollection } from '/imports/api/PlayersCollection';
 import { GamesCollection } from '/imports/api/GamesCollection';
 
-export const Leaderboard = ({ gameId, isAdmin, endGame }) => {
+export const Leaderboard = ({ gameId, name, isAdmin, endGame, goToMenu }) => {
+  const [disqualified, setDisqualified] = useState(false)
+
+  const leaveGame = () => {
+    Meteor.call('leaveLeaderboardGame', name, (err, res) => {
+      goToMenu();
+    })
+  }
+
   return (
-    <div>
+    <div class="d-flex align-items-center flex-column">
       <div>
         Leaderboard
       </div>
@@ -16,9 +24,9 @@ export const Leaderboard = ({ gameId, isAdmin, endGame }) => {
         />
       </div>
       {isAdmin ? (
-        <button onClick={endGame}>End game</button>
+        <button type="button" class="btn btn-danger" onClick={endGame}>End game</button>
       ) : (
-        ""
+        <button type="button" class="btn btn-danger" onClick={leaveGame}>Leave game</button>
       )}
     </div>
   );
@@ -49,15 +57,25 @@ const LeaderboardPlayers = ({ gameId, isAdmin }) => {
 
   return (
     <div>
-      <ul>
-        {players.map((p, index) => <LeaderboardPlayer
-          key={p.name}
-          player={p}
-          isAdmin={isAdmin}
-          scoreType={scoreType}
-          placeTemp={index + 1}
-        /> )}
-      </ul>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {players.map((p, index) => <LeaderboardPlayer
+            key={p.name}
+            player={p}
+            isAdmin={isAdmin}
+            scoreType={scoreType}
+            placeTemp={index + 1}
+          /> )}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -77,7 +95,7 @@ const LeaderboardPlayer = ({ player, isAdmin, scoreType, placeTemp }) => {
     if (scoreType === "Time") {
       if (score === "") {
         Meteor.call('updateScore', player, score);
-      } else if (/[0-9]{2}\:[0-9]{2}\.[0-9]{2}/.test(score)) {
+      } else if (/[0-5][0-9]:[0-5][0-9]\.[0-9]{2}/.test(score)) {
         const mm = Number(score.match(/(?:.*?[0-9]+){0}.*?([0-9]+)/s)[1])
         const ss = Number(score.match(/(?:.*?[0-9]+){1}.*?([0-9]+)/s)[1])
         const ms = Number(score.match(/(?:.*?[0-9]+){2}.*?([0-9]+)/s)[1])
@@ -100,6 +118,8 @@ const LeaderboardPlayer = ({ player, isAdmin, scoreType, placeTemp }) => {
     if (scoreType === "Time") {
       if (!player.points) {
         setScore("")
+      } else if (player.points === "DQ") {
+        setScore("")
       } else {
         let points = player.points
         let mm = Math.floor(points / 6000)
@@ -120,14 +140,23 @@ const LeaderboardPlayer = ({ player, isAdmin, scoreType, placeTemp }) => {
     }
   }, [player.points])
 
-  const points = player.points || player.points === 0 ? `| Points: ${score} |` : ""
+  const points = (player.points && player.points !== "DQ") || player.points === 0 ? `${score}` : ""
 
-  const place = player.points || player.points === 0 || isAdmin ? ` Place: ${placeTemp}` : ""
+  const place = player.points === "DQ" ? `X` : player.points || player.points === 0 || isAdmin ? `${placeTemp}` : ""
 
   const onScoreChange = e => {
     if (scoreType === "Time") {
+      const re = new RegExp ([
+        '^(?:',
+        '[0-5]|',
+        '[0-5][0-9]|',
+        '[0-5][0-9]:|',
+        '[0-5][0-9]:[0-5]|',
+        '[0-5][0-9]:[0-5][0-9]|',
+        '[0-5][0-9]:[0-5][0-9]\\.|',
+        '[0-5][0-9]:[0-5][0-9]\\.[0-9]{1,2})$'
+      ].join(''));
 
-      const re = /^(?:[0-9]{1,2}|[0-9]{2}\:|[0-9]{2}\:[0-9]{1,2}|[0-9]{2}\:[0-9]{2}\.|[0-9]{2}\:[0-9]{2}\.[0-9]{1,2})$/;
       if (re.test(e.target.value)) {
         setScore(e.target.value)
       } else if (e.target.value === '') {
@@ -143,30 +172,40 @@ const LeaderboardPlayer = ({ player, isAdmin, scoreType, placeTemp }) => {
     }
   }
 
+  const disqualify = () => {
+    Meteor.call('disqualify', player.name, (err, res) => {
+
+    })
+  }
+
   const placeholder = scoreType === "Time" ? "mm:ss.ms" : "points"
 
   return (
-    <div>
-      <button onClick={addPoints}>+</button>
-      <button onClick={removePoints}>-</button>
-      {place} Name: {player.name}&nbsp;
-      {isAdmin ? (
-        <Fragment>
-          | Points:&nbsp;
-          <input
-            className="score"
-            type="text"
-            placeholder={placeholder}
-            value={score}
-            onChange={onScoreChange}
-          />
-          <button onClick={saveScore}>Save</button>
-        </Fragment>
-      ) : (
-        <Fragment>
-          {points}
-        </Fragment>
-      )}
-    </div>
+    <Fragment>
+      <tr>
+        <th scope="row">{place}</th>
+        <td>{player.name}</td>
+        <td>
+          {isAdmin ? (
+            <Fragment>
+              <input
+                className="score"
+                type="text"
+                size="8"
+                placeholder={placeholder}
+                value={score}
+                onChange={onScoreChange}
+              />
+              <button type="button" class="btn btn-primary btn-sm" onClick={saveScore}>Save</button>
+              <button type="button" class="btn btn-danger btn-sm" onClick={disqualify}>&times;</button>
+            </Fragment>
+          ) : (
+            <Fragment>
+              {points}
+            </Fragment>
+          )}
+        </td>
+      </tr>
+    </Fragment>
   );
 }
