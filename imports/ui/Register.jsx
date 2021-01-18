@@ -20,33 +20,32 @@ export const Register = ({ goToMenu, goToLogin }) => {
 
   return (
     <form onSubmit={handleSubmit} className="login-form">
-      Register
-      <div>
-        <label htmlFor="username">Username</label>
+      <div class="vertical-input-group mb-3 mt-0">
+        <div class="input-group">
+          <input
+            type="text"
+            placeholder="Username"
+            class="form-control"
+            name="username"
+            required
+            onChange={e => setUsername(e.target.value)}
+          />
+        </div>
 
-        <input
-          type="text"
-          placeholder="Username"
-          name="username"
-          required
-          onChange={e => setUsername(e.target.value)}
-        />
+        <div class="input-group">
+          <input
+            type="password"
+            placeholder="Password"
+            class="form-control"
+            name="password"
+            required
+            onChange={e => setPassword(e.target.value)}
+          />
+        </div>
       </div>
 
-      <div>
-        <label htmlFor="password">Password</label>
-
-        <input
-          type="password"
-          placeholder="Password"
-          name="password"
-          required
-          onChange={e => setPassword(e.target.value)}
-        />
-      </div>
-
-      <button type="submit">Register</button>
-      <button onClick={goToLogin}>Back</button>
+      <button type="submit" class="btn btn-primary size mb-3">Create an account</button>
+      <button type="button" class="btn btn-secondary size" onClick={goToLogin}>Back</button>
     </form>
   );
 

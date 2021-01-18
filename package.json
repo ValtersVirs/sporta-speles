@@ -14,6 +14,7 @@
     "bootstrap": "^5.0.0-beta1",
     "meteor-node-stubs": "^1.0.1",
     "react": "^16.13.1",
+    "react-bootstrap": "^1.4.3",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0"
   },

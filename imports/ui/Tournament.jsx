@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, Fragment } from 'react'
 import { Meteor } from 'meteor/meteor';
+import { Modal } from 'react-bootstrap'
 import { PlayersCollection } from '/imports/api/PlayersCollection';
 import { TeamsCollection } from '/imports/api/TeamsCollection';
 import { Player } from './Player';
@@ -9,16 +10,13 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
   const partCurrent = useRef("");
   const callOnce = useRef(0);
   const [update, setUpdate] = useState(0);
+  const [round, setRound] = useState('')
   const [winner, setWinner] = useState(false);
   const temp = useRef(false);
 
+  console.log("page re-render");
+
   const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
-
-  console.log("main roundList");
-  console.log(roundList);
-
-  console.log("main partCurrent:");
-  console.log(partCurrent.current);
 
   useEffect(() => {
     Meteor.call('setId', gameId, gameType, (err, res) => {
@@ -36,8 +34,6 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
 
       const completedRounds = maxRound - (maxRoundCount === Math.ceil(totalParticipants / Math.pow(2, maxRound - 1)) ? 0 : 1)
 
-      console.log(`onMount completedRounds ${completedRounds}`);
-
       for (let n = 0; n < completedRounds; n++) {
         rounds[n] = collection.find({
           gameId: gameId,
@@ -47,17 +43,12 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
         }).fetch()
       }
 
-      console.log("onMount rounds:");
-      console.log(rounds);
-
       partCurrent.current = rounds[rounds.length - 1];
       setRoundList(rounds);
     });
   }, []);
 
   useEffect(() => {
-      console.log("useEffect");
-
       const maxRound = collection.findOne({ gameId: gameId }, {
         sort: { round: -1 }
       }).round;
@@ -74,8 +65,6 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
       let count = 0
       let participantCount = 0
 
-      console.log("----------------------- calc 1");
-
       while (count < maxRound - 1) {
         if (x % 2) {
           if (i == 1) {
@@ -88,18 +77,11 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
         }
         participantCount = x / 2
         x = x / 2
-        console.log(`participantCount = ${participantCount}`);
 
         count++
       }
 
-      console.log(`maxRound = ${maxRound}`);
-      console.log(`maxRoundCount = ${maxRoundCount}`);
-      console.log(`participantCount = ${participantCount}`);
-
       const completedRounds = maxRound - (maxRoundCount >= participantCount ? 0 : 1)
-
-      console.log(`completedRounds = ${completedRounds}`);
 
       const curRound = collection.find({
         gameId: gameId,
@@ -109,9 +91,6 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
       }).fetch()
 
       partCurrent.current = curRound;
-
-      console.log("useEffect partCurrent");
-      console.log(partCurrent.current);
   });
 
   useEffect(() => {
@@ -131,8 +110,6 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
       let count = 0
       let participantCount = 0
 
-      console.log("----------------------- calc 2");
-
       while (count < maxRound - 1) {
         if (x % 2) {
           if (i == 1) {
@@ -145,46 +122,20 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
         }
         participantCount = x / 2
         x = x / 2
-        console.log(`participantCount = ${participantCount}`);
 
         count++
       }
 
       let isOdd = roundList[roundList.length - 1].length % 2 ? 1 : 0;
 
-      console.log(`maxRound = ${maxRound}`);
-      console.log(`maxRoundCount = ${maxRoundCount}`);
-      console.log(`participantCount = ${participantCount}`);
-      console.log(`isOdd = ${isOdd}`);
-
       const completedRounds = maxRound - (maxRoundCount >= participantCount ? 0 : 1)
 
-      console.log(`completedRounds = ${completedRounds}`);
-
-      console.log("got here 1 ----------------------------");
-      console.log("partCurrent.current");
-      console.log(partCurrent.current);
-      console.log("roundList[roundList.length - 1]");
-      console.log(roundList[roundList.length - 1]);
-
       if (partCurrent.current.length === (roundList[roundList.length - 1].length - isOdd) / 2) {
-        console.log("got here 2 ----------------------------");
-        console.log("partCurrent.current.length");
-        console.log(partCurrent.current.length);
-        console.log("roundList[roundList.length - 1].length");
-        console.log(roundList[roundList.length - 1].length);
         if (partCurrent.current.length !== roundList[roundList.length - 1].length - isOdd) {
-          console.log("got here 3 ----------------------------");
           callOnce.current = callOnce.current + 1;
-          console.log(`callOnce = ${callOnce.current}`);
-          console.log(`isOdd = ${isOdd}`);
           if (isOdd && callOnce.current === 1 && partCurrent.current !== roundList[roundList.length -1]) {
-            console.log("isOdd called");
-            console.log(`maxRound = ${maxRound}`);
             Meteor.call('oddParticipant', gameId, gameType, maxRound, (err, res) => {
               if (err) {
-                console.log('nextRound error');
-                console.log(err);
               } else {
                 partCurrent.current = collection.find({
                   gameId: gameId,
@@ -192,14 +143,11 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
                 }, {
                   sort: { nr: 1 }
                 }).fetch()
-                console.log("isOdd partCurrent");
-                console.log(partCurrent.current);
                 callOnce.current = 0;
                 setRoundList(roundList => [...roundList, partCurrent.current]);
               }
             })
           } else if (callOnce.current === 1) {
-            console.log("isntOdd");
             callOnce.current = 0;
             setRoundList(roundList => [...roundList, partCurrent.current]);
           }
@@ -207,27 +155,23 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
       }
   }, [partCurrent.current])
 
-  const matchLoser = ( index ) => {
-    console.log("f -------------------");
-    console.log("f partCurrent.current:");
-    console.log(partCurrent.current);
-    console.log("f roundList[last]");
-    console.log(roundList[roundList.length - 1]);
+  useEffect(() => {
+      setRound(roundList.length - 1)
+  }, [roundList])
+
+  const nextRound = () => {
+    if (round < roundList.length - 1) setRound(round + 1)
+  }
+
+  const prevRound = () => {
+    if (round > 0) setRound(round - 1)
+  }
+
+  const matchLoser = ( index, winnerScore, loserScore ) => {
     var loser = partCurrent.current[index].name;
     var winner = index % 2 ? index - 1 : index + 1;
-    console.log(`f winner ${partCurrent.current[winner].name}, index ${winner} before`);
-    console.log(`f loser ${loser}, index ${index} before`);
     partCurrent.current[index].status = "lost";
-    Meteor.call('matchCompleted', partCurrent.current[winner].name, loser, gameId, gameType, (err, res) => {
-      console.log(`f winner ${partCurrent.current[winner].name} after`);
-      console.log(`f loser ${loser} after`);
-      console.log('f partCurrent array:');
-      console.log(partCurrent.current);
-      console.log('f roundList array:');
-      console.log(roundList);
-      console.log("f collection.find()");
-      console.log(collection.find({ gameId: gameId }).fetch());
-    })
+    Meteor.call('matchCompleted', partCurrent.current[winner].name, loser, winnerScore, loserScore, gameId, gameType)
   };
 
   const tournament = roundList.map((a, index) =>
@@ -238,6 +182,7 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
       gameId={gameId}
       gameType={gameType}
       collection={collection}
+      isAdmin={isAdmin}
       matchLoser={matchLoser}
     />
   )
@@ -254,37 +199,21 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
   }
 
   return (
-    <div>
-      Tournament
-      <div>{tournament}</div>
-      <div><Participants part={part}/></div>
+    <div class="d-flex align-items-center flex-column">
+      <div class="row mb-3">
+        <div class="col-6">
+          <button type="button" class="btn btn-secondary" onClick={prevRound}>&lt;-</button>
+        </div>
+        <div class="col-6">
+          <button type="button" class="btn btn-secondary" onClick={nextRound}>-&gt;</button>
+        </div>
+      </div>
+      <div class="size">{tournament[round]}</div>
       {isAdmin ? (
-        <button onClick={endGame}>End game</button>
+        <button type="button" class="btn btn-danger size" onClick={endGame}>End game</button>
       ) : (
-        <button onClick={leaveGame}>Leave game</button>
+        <button type="button" class="btn btn-danger size" onClick={leaveGame}>Leave game</button>
       )}
-      {winner ? (
-        <Ranking
-          collection={collection}
-          gameId={gameId}
-        />
-      ) : (
-        ""
-      )}
-    </div>
-  );
-};
-
-const Participants = ({ part }) => {
-  return (
-    <div>
-    Participants
-    <ul className="players">
-      { part.map(p => <Player
-        key={ p._id }
-        player={ p }
-      />) }
-    </ul>
     </div>
   );
 };
@@ -295,28 +224,41 @@ const Ranking = ({ collection, gameId }) => {
   })
 
   return (
-    <div>
-      Leaderboard
-      <ul>
-        { participants.map((p, index) => <RankingPlayer
+    <div class="d-flex align-items-center flex-column mb-3">
+      <p class="h4">Leaderboard</p>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">Points</th>
+          </tr>
+        </thead>
+        <tbody>
+          { participants.map((p, index) => <RankingPlayer
             key={p._id}
             player={p}
             place={index + 1}
           />) }
-      </ul>
+        </tbody>
+      </table>
     </div>
   );
 }
 
 const RankingPlayer = ({ player, place }) => {
   return (
-    <div>
-      <span>Place {place} | Points: {player.points} | Name: {player.name}</span>
-    </div>
+    <Fragment>
+      <tr>
+        <th scope="row">{place}</th>
+        <td scope="row">{player.name}</td>
+        <td scope="row">{player.points}</td>
+      </tr>
+    </Fragment>
   );
 }
 
-const Round = ({ participants, roundNr, gameId, gameType, collection, matchLoser }) => {
+const Round = ({ participants, roundNr, gameId, gameType, collection, isAdmin, matchLoser }) => {
   let round = []
 
   let a = 0;
@@ -329,53 +271,187 @@ const Round = ({ participants, roundNr, gameId, gameType, collection, matchLoser
     if (winnerCount === 0) Meteor.call('setWinner', gameId, gameType, participants[0].name)
 
     return (
-      <div>Winner {participants[0].name}</div>
+      <Ranking
+        collection={collection}
+        gameId={gameId}
+      />
     );
   } else {
     for (let i = 0; i < (participants.length - a) / 2; i++) {
       let match = []
       let disabled = false
+      let matchParticipants = []
       for (let j = 0 + (2 * i); j < 2 + (2 * i); j++) {
         if (collection.findOne({ name: participants[j].name, gameId: gameId }).status === "lost") {
           disabled = true;
         }
-        match.push(<Participant key={participants[j].name} participant={participants[j]} />)
+        matchParticipants = [...matchParticipants, participants[j]]
+        if (j % 2) match.push(<div class="col-2 d-flex justify-content-center">vs</div>,<Participant key={participants[j].name} participant={participants[j]} />)
+        else match.push(<Participant key={participants[j].name} participant={participants[j]} />)
       }
-      round.push(<Match key={i} match={match} matchNr={i} disabled={disabled} matchLoser={matchLoser} />)
+      round.push(<Match key={i} match={match} gameId={gameId} collection={collection} matchNr={i} participants={matchParticipants} isAdmin={isAdmin} disabled={disabled} matchLoser={matchLoser} />)
     }
 
     return (
-      <div className="round">
-        <div>Round {roundNr}</div>
-        <div className="round-list" >{round}</div>
+      <div class="d-flex align-items-center flex-column">
+        <p class="h4">Round {roundNr}</p>
+        <div class="d-flex align-items-center flex-column w-100">{round}</div>
       </div>
     );
   }
 }
 
-const Match = ({ match, matchNr, disabled, matchLoser }) => {
+const Match = ({ match, gameId, collection, matchNr, participants, isAdmin, disabled, matchLoser }) => {
   const [isDisabled, setIsDisabled] = useState(disabled);
+  const [teamOne, setTeamOne] = useState('');
+  const [teamTwo, setTeamTwo] = useState('');
+  const [saveDisabled, setSaveDisabled] = useState(true);
+  const [show, setShow] = useState(false)
+
+  const matchParticipants = participants.map(x => collection.findOne({ name: x.name, gameId: gameId }))
+
+  var hideButton = ""
+
+  var score = []
+  var color = []
+
+  if (isDisabled === true) {
+    const loser = matchParticipants.filter(x => {
+      return x.status === "lost"
+    })
+
+    if (matchParticipants[0].status === "lost") {
+      score = [loser[0].loserScore, loser[0].winnerScore]
+      color = ["danger", "success"]
+    }
+    else {
+      score = [loser[0].winnerScore, loser[0].loserScore]
+      color = ["success", "danger"]
+    }
+
+    hideButton = "d-none"
+  }
+
+  const showModal = () => setShow(true)
+  const closeModal = () => setShow(false)
 
   const handleClick = (i) => {
+    alert(`matchNr = ${matchNr}`)
     matchLoser(i + (2 * matchNr))
     disable();
   };
 
+  const scoreSubmit = () => {
+    if (teamOne > teamTwo) matchLoser(1 + (2 * matchNr), teamOne, teamTwo)
+    else matchLoser(0 + (2 * matchNr), teamTwo, teamOne)
+    closeModal()
+  }
+
+  const teamOneChange = e => {
+    const re = /^[0-9\b]+$/;
+    if (!e.target.value) {
+      setTeamOne("")
+    } else if (re.test(e.target.value)) {
+      setTeamOne(Number(e.target.value))
+    }
+  }
+
+  const teamTwoChange = e => {
+    const re = /^[0-9\b]+$/;
+    if (!e.target.value) {
+      setTeamTwo("")
+    } else if (re.test(e.target.value)) {
+      setTeamTwo(Number(e.target.value))
+    }
+  }
+
+  useEffect(() => {
+    if (disabled === true) setIsDisabled(true)
+  }, [disabled])
+
+  useEffect(() => {
+    if (teamOne === '' || teamTwo === '') setSaveDisabled(true)
+    else if (teamOne === teamTwo) setSaveDisabled(true)
+    else setSaveDisabled(false)
+  }, [teamOne, teamTwo])
+
   const disable = () => setIsDisabled(true);
 
   return (
-    <div>
-      <ul className="match-list" >{match}</ul>
-      <button onClick={() => handleClick(1)} disabled={isDisabled} >win 1</button>
-      <button onClick={() => handleClick(0)} disabled={isDisabled} >win 2</button>
+    <div class="mb-4 w-100">
+      <div class="row">
+        {match}
+      </div>
+      {isDisabled ? (
+        <div class="row">
+          <div class="col-5 d-flex justify-content-center">
+            <b class={`text-${color[0]}`}>{score[0]}</b>
+          </div>
+          <div class="col-2 d-flex justify-content-center">
+            <span>:</span>
+          </div>
+          <div class="col-5 d-flex justify-content-center">
+            <b class={`text-${color[1]}`}>{score[1]}</b>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
+      {isAdmin ? (
+        <div class="row">
+          <div class="col-12 d-flex justify-content-center">
+            <button type="button" class={`btn btn-primary btn-sm ${hideButton}`} onClick={showModal} disabled={isDisabled}>Set score</button>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
+
+      <Modal show={show} onHide={closeModal}>
+        <Modal.Header>
+          <Modal.Title>Set score for teams</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div class="row">
+            <div class="col-5 d-flex justify-content-center">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Team 1"
+                value={teamOne}
+                onChange={teamOneChange}
+                required
+              />
+            </div>
+            <div class="col-2 d-flex justify-content-center">
+              <span>:</span>
+            </div>
+            <div class="col-5 d-flex justify-content-center">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Team 2"
+                value={teamTwo}
+                onChange={teamTwoChange}
+                required
+              />
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <button type="button" class="btn btn-secondary" onClick={closeModal}>Close</button>
+          <button type="button" class="btn btn-primary" onClick={scoreSubmit} disabled={saveDisabled}>Save Changes</button>
+        </Modal.Footer>
+      </Modal>
+
     </div>
   );
 };
 
 const Participant = ({ participant }) => {
   return (
-    <div>
-      <span>{participant.name}</span>
+    <div class="col-5 d-flex justify-content-center">
+      <b>{participant.name}</b>
     </div>
   );
 }

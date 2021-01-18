@@ -1,29 +1,43 @@
-import React from 'react';
+import React, { useState, useEffect, useRef, Fragment } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { TeamsCollection } from '/imports/api/TeamsCollection';
 
-export const Teams = ({ gameId, player, maxPlayers }) => {
+export const Teams = ({ gameId, player, maxPlayers, isAdmin }) => {
   const curGameTeams = TeamsCollection.find({ gameId: gameId }, {
     sort: { createdAt: 1 }
   }).fetch();
 
   return (
-    <div>Teams
-      <ul>
-        { curGameTeams.map(team => <Team
-          key={team._id}
-          teams={curGameTeams}
-          team={team}
-          player={player}
-          gameId={gameId}
-          maxPlayers={maxPlayers}
-        />) }
-      </ul>
+    <div>
+      { curGameTeams.map(team => <Team
+        key={team._id}
+        teams={curGameTeams}
+        team={team}
+        player={player}
+        gameId={gameId}
+        maxPlayers={maxPlayers}
+        isAdmin={isAdmin}
+      />) }
     </div>
   );
 }
 
-const Team = ({ teams, team, player, gameId, maxPlayers }) => {
+const Team = ({ teams, team, player, gameId, maxPlayers, isAdmin }) => {
+  const [teamName, setTeamName] = useState(team.name)
+  const refHidden = useRef(null)
+  const refInput = useRef(null)
+
+  var readonly
+
+  if (isAdmin) {
+    readonly = false
+  } else {
+    readonly = true
+  }
+
+  useEffect(() => {
+    setTeamName(team.name)
+  }, [team.name])
 
   const handleJoinClick = () => {
     for (let n = 0; n < teams.length; n++) {
@@ -51,24 +65,54 @@ const Team = ({ teams, team, player, gameId, maxPlayers }) => {
     displayJoin = "none";
   }
 
+  const handleClick = () => {
+    if (TeamsCollection.find({ gameId: gameId, name: teamName }).count()) {
+      alert(`${teamName} already exists`)
+    } else {
+      Meteor.call('changeTeamName', gameId, team.name, teamName)
+      alert(`Team name set to ${teamName}`)
+    }
+  }
+
+  const onNameChange = e => {
+    setTeamName(e.target.value)
+  }
+
+  useEffect(() => {
+    refInput.current.style.width = `${refHidden.current.offsetWidth}px`
+  }, [teamName])
+
+  const formLength = teamName.length ? teamName.length : 1
+
   return (
-    <div>
-      <span>Team: {team.name}</span>
-      <ul>
-        { team.players.map(teamPlayer => <TeamPlayer
-          player={teamPlayer}
-        />) }
-      </ul>
-      <button onClick={handleJoinClick} style={{display: displayJoin}}>Join team</button>
-      <button onClick={handleLeaveClick} style={{display: displayLeave}}>Leave team</button>
+    <div class="d-flex align-items-center flex-column">
+      <div>
+        <span id="hide" class="p-0 m-0" ref={refHidden}>{teamName}&nbsp;&nbsp;</span>
+        <input
+          class="p-0 m-0 score fw-bold"
+          type="text"
+          ref={refInput}
+          value={teamName}
+          onChange={onNameChange}
+          readOnly={readonly}
+        />
+        {isAdmin ? (
+          <span class="badge bg-secondary" role="button" onClick={handleClick}>edit</span>
+        ) : (
+          ""
+        )}
+      </div>
+      { team.players.map(teamPlayer => <TeamPlayer
+        player={teamPlayer}
+      />) }
+      <button type="button" class="btn btn-primary btn-sm mb-3 size-100px" onClick={handleJoinClick} style={{display: displayJoin}}>Join team</button>
+      <button type="button" class="btn btn-danger btn-sm mb-3 size-100px" onClick={handleLeaveClick} style={{display: displayLeave}}>Leave team</button>
     </div>
   );
 };
 
 const TeamPlayer = ({ player }) => {
   return (
-    <div>
-      <span>Name: {player}</span>
-    </div>
+    <span>{player}</span>
   );
 };

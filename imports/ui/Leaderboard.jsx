@@ -142,7 +142,7 @@ const LeaderboardPlayer = ({ player, isAdmin, scoreType, placeTemp }) => {
 
   const points = (player.points && player.points !== "DQ") || player.points === 0 ? `${score}` : ""
 
-  const place = player.points === "DQ" ? `X` : player.points || player.points === 0 || isAdmin ? `${placeTemp}` : ""
+  const place = player.points === "DQ" ? `X` : player.points || player.points === 0 ? `${placeTemp}` : ""
 
   const onScoreChange = e => {
     if (scoreType === "Time") {

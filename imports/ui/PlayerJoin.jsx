@@ -45,7 +45,7 @@ export const PlayerJoin = ({ user, deletePlayer, goToMenu }) => {
       ) : (
         <div class="d-flex justify-content-center">
           <form class="row gap-3 size" onSubmit={handleSubmit}>
-            <div class="col-12 d-flex justify-content-center">
+            <div class="col-12 d-flex justify-content-center p-0">
               <input
                 type="text"
                 class="form-control"
@@ -54,10 +54,10 @@ export const PlayerJoin = ({ user, deletePlayer, goToMenu }) => {
                 onChange={(e) => setGameId(e.target.value.toUpperCase())}
               />
             </div>
-            <div class="col-12 d-flex justify-content-center">
+            <div class="col-12 d-flex justify-content-center p-0">
               <button type="submit" class="btn btn-primary size">Join</button>
             </div>
-            <div class="col-12 d-flex justify-content-center">
+            <div class="col-12 d-flex justify-content-center p-0">
               <button type="button" class="btn btn-secondary" onClick={goToMenu}>Back</button>
             </div>
           </form>

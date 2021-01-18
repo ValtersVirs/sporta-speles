@@ -7,8 +7,33 @@
   width: 200px;
 }
 
-.test {
-  width: 100%
+.size-100px {
+  width: 100px;
+}
+
+.vertical-input-group .input-group:first-child {
+    padding-bottom: 0;
+}
+.vertical-input-group .input-group:first-child * {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+.vertical-input-group .input-group:last-child {
+    padding-top: 0;
+}
+.vertical-input-group .input-group:last-child * {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+.vertical-input-group .input-group:not(:last-child):not(:first-child) {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.vertical-input-group .input-group:not(:last-child):not(:first-child) * {
+    border-radius: 0;
+}
+.vertical-input-group .input-group:not(:first-child) * {
+    border-top: 0;
 }
 
 .buttons {
@@ -115,4 +140,11 @@
 
 .score:focus {
   outline: none;
+}
+
+#hide {
+  position: absolute;
+  height: 0;
+  overflow: hidden;
+  white-space: pre;
 }

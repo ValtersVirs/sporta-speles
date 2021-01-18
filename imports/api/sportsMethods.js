@@ -84,14 +84,14 @@ Meteor.methods({
       $set: { round: 1, status: "playing", points: 0, winner: false }
     }, { multi: true })
   },
-  'matchCompleted'(winner, loser, gameId, gameType) {
+  'matchCompleted'(winner, loser, winnerScore, loserScore, gameId, gameType) {
     const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
 
     collection.update({ name: winner, gameId: gameId }, {
       $inc: { round: 1, points: 1 }
     }),
     collection.update({ name: loser, gameId: gameId }, {
-      $set: { status: "lost" }
+      $set: { status: "lost", winnerScore: winnerScore, loserScore: loserScore }
     })
   },
   'oddParticipant'(gameId, gameType, round) {
@@ -198,6 +198,11 @@ Meteor.methods({
   'disqualify'(name) {
     PlayersCollection.update({ name: name, inGame: true }, {
       $set: { points: "DQ" }
+    })
+  },
+  'changeTeamName'(gameId, oldName, newName) {
+    TeamsCollection.update({ gameId: gameId, name: oldName }, {
+      $set: { name: newName }
     })
   },
 })

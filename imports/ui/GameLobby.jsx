@@ -104,7 +104,7 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
                       />) }
                     </ul>
 
-                    <button type="button" class="btn btn-primary" onClick={gameStart}>Start game</button>
+                    <button type="button" class="btn btn-primary size" onClick={gameStart}>Start game</button>
                   </Fragment>
                 ) : (
                   <Fragment>
@@ -119,21 +119,20 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
                 )}
               </div>
 
-              <div>
               {game.gameType === "Team" ? (
                 <Teams
                   gameId={game.gameId}
                   player={curPlayer}
                   maxPlayers={game.teamSize}
+                  isAdmin={curPlayer.isAdmin}
                 />
               ) : "" }
-              </div>
 
               <div>
               {curPlayer.isAdmin ? (
-                <button type="button" class="btn btn-danger" onClick={endGame}>End game</button>
+                <button type="button" class="btn btn-danger size" onClick={endGame}>End game</button>
               ) : (
-                <button type="button" class="btn btn-danger" onClick={leaveGame}>Leave game</button>
+                <button type="button" class="btn btn-danger size" onClick={leaveGame}>Leave game</button>
               )}
               </div>
             </div>

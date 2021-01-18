@@ -52,14 +52,18 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
 
   const onChangeNumber = e => {
     const re = /^[0-9\b]+$/;
-    if (e.target.value === '' || re.test(e.target.value)) {
+    if (!e.target.value) {
+      setTeamNumber("")
+    } else if (re.test(e.target.value)) {
       setTeamNumber(Number(e.target.value))
     }
   }
 
   const onChangeSize = e => {
     const re = /^[0-9\b]+$/;
-    if (e.target.value === '' || re.test(e.target.value)) {
+    if (!e.target.value) {
+      setTeamSize("")
+    } else if (re.test(e.target.value)) {
       setTeamSize(Number(e.target.value))
     }
   }
@@ -68,7 +72,7 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
     switch (select) {
       case "Individual":
         return (
-          <div class="col-12 mb-3">
+          <div class="col-12 mb-3 p-0">
             <div class="form-check">
               <input
                 type="checkbox"
@@ -83,7 +87,7 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
       case "Team":
         return (
           <Fragment>
-            <div class="col-12 mb-3">
+            <div class="col-12 mb-3 p-0">
               <input
                 type="text"
                 class="form-control"
@@ -92,7 +96,7 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
                 onChange={onChangeNumber}
               />
             </div>
-            <div class="col-12 mb-3">
+            <div class="col-12 mb-3 p-0">
               <input
                 type="text"
                 class="form-control"
@@ -101,7 +105,7 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
                 onChange={onChangeSize}
               />
             </div>
-            <div class="col-12 mb-3">
+            <div class="col-12 mb-3 p-0">
               <div class="form-check">
                 <input
                   type="checkbox"
@@ -117,8 +121,8 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
       case "Leaderboard":
         return (
           <Fragment>
-            <label class="form-label">Scoring Type</label>
-            <div class="col-12 mb-3">
+            <label class="form-label p-0">Scoring Type</label>
+            <div class="col-12 mb-3 p-0">
               <select class="form-select" value={scoreType} onChange={e => setScoreType(e.target.value)}>
                 <option value="Time">Time</option>
                 <option value="Points">Points</option>
@@ -143,8 +147,8 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
       ) : (
         <div class="d-flex justify-content-center">
           <form class="row size" onSubmit={handleSubmit}>
-            <label class="form-label" for="gameType">Game Type</label>
-            <div class="col-12 mb-3 d-flex justify-content-center">
+            <label class="form-label p-0" for="gameType">Game Type</label>
+            <div class="col-12 mb-3 d-flex justify-content-center p-0">
               <select class="form-select" id="gameType" value={select} onChange={e => setSelect(e.target.value)}>
                 <option value="Individual">Individual sport</option>
                 <option value="Team">Team sport</option>
@@ -152,10 +156,10 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
               </select>
             </div>
             {selectedOptions(select)}
-            <div class="col-12 mb-3 d-flex justify-content-center">
+            <div class="col-12 mb-3 d-flex justify-content-center p-0">
               <button type="submit" class="btn btn-primary size">Create Game</button>
             </div>
-            <div class="col-12 d-flex justify-content-center">
+            <div class="col-12 d-flex justify-content-center p-0">
               <button type="button" class="btn btn-secondary" onClick={goToMenu}>Back</button>
             </div>
           </form>
