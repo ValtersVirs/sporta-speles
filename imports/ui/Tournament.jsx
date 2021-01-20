@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, Fragment } from 'react'
 import { Meteor } from 'meteor/meteor';
-import { Modal } from 'react-bootstrap'
+import { Modal } from 'react-bootstrap';
 import { PlayersCollection } from '/imports/api/PlayersCollection';
 import { TeamsCollection } from '/imports/api/TeamsCollection';
 import { Player } from './Player';
@@ -13,6 +13,7 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
   const [round, setRound] = useState('')
   const [winner, setWinner] = useState(false);
   const temp = useRef(false);
+  const [showLeave, setShowLeave] = useState(false);
 
   console.log("page re-render");
 
@@ -198,22 +199,41 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
     })
   }
 
+  const openLeave = () => setShowLeave(true)
+  const closeLeave = () => setShowLeave(false)
+
   return (
     <div class="d-flex align-items-center flex-column">
       <div class="row mb-3">
         <div class="col-6">
-          <button type="button" class="btn btn-secondary" onClick={prevRound}>&lt;-</button>
+          <button type="button" class="btn btn-secondary" onClick={prevRound}>&lt;</button>
         </div>
         <div class="col-6">
-          <button type="button" class="btn btn-secondary" onClick={nextRound}>-&gt;</button>
+          <button type="button" class="btn btn-secondary" onClick={nextRound}>&gt;</button>
         </div>
       </div>
       <div class="size">{tournament[round]}</div>
       {isAdmin ? (
-        <button type="button" class="btn btn-danger size" onClick={endGame}>End game</button>
+        <button type="button" class="btn btn-danger size" onClick={openLeave}>End game</button>
       ) : (
-        <button type="button" class="btn btn-danger size" onClick={leaveGame}>Leave game</button>
+        <button type="button" class="btn btn-danger size" onClick={openLeave}>Leave game</button>
       )}
+
+      <Modal show={showLeave} onHide={closeLeave}>
+        <Modal.Body>
+          {isAdmin ? (
+            <span>Are you sure you want to end the game?</span>
+          ) : (
+            <span>Are you sure you want to leave the game?<br/>You will not be able to join back.</span>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <button type="button" class="btn btn-secondary" onClick={closeLeave}>Cancel</button>
+          <button type="button" class="btn btn-primary" onClick={isAdmin ? endGame : leaveGame}>
+            {isAdmin ? "End Game" : "Leave Game"}
+          </button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

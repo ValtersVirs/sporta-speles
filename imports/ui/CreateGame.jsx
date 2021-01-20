@@ -1,6 +1,7 @@
 import React, { useState, Fragment } from 'react';
 import { Meteor } from 'meteor/meteor';
-import { Random } from 'meteor/random'
+import { Random } from 'meteor/random';
+import { Modal } from 'react-bootstrap';
 import { PlayersCollection } from '/imports/api/PlayersCollection';
 import { GameLobby } from './GameLobby';
 
@@ -12,8 +13,19 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
   const [isChecked, setIsChecked] = useState(false);
   const [isFilledIn, setIsFilledIn] = useState(false);
   const [randomId, setRandomId] = useState(Random.id(6).toUpperCase());
+  const [showCreate, setShowCreate] = useState(false);
 
   const handleSubmit = e => {
+    e.preventDefault();
+
+    if (select === "Team") {
+      if (!teamNumber || !teamSize) return;
+    }
+
+    openCreate()
+  };
+
+  const handleModal = () => {
     const createGame = () => {
       Meteor.call('playerInsert', user.username, randomId, true, (err, res) => {
         Meteor.call('gameCreate', randomId, select, scoreType, isChecked, teamSize, teamNumber, (err, res) => {
@@ -22,11 +34,7 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
       )
     }
 
-    e.preventDefault();
-
-    if (select === "Team") {
-      if (!teamNumber || !teamSize) return;
-    }
+    closeCreate()
 
     if (PlayersCollection.find({ name: user.username, inGame: true }).count() !== 0) {
       //if isAdmin === true -> end game  else  leave game
@@ -41,14 +49,14 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
           Meteor.call('leaveStartedGame', user.username)
         ) : (
           //game hasnt started
-          Meteor.call('leaveGame', user.username)
+          Meteor.call('leaveGame', PlayersCollection.findOne({ name: user.username, inGame: true }))
         )
         createGame();
       }
     } else {
       createGame();
     }
-  };
+  }
 
   const onChangeNumber = e => {
     const re = /^[0-9\b]+$/;
@@ -68,6 +76,9 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
     }
   }
 
+  const openCreate = () => setShowCreate(true)
+  const closeCreate = () => setShowCreate(false)
+
   const selectedOptions = (select) => {
     switch (select) {
       case "Individual":
@@ -80,7 +91,7 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
                 id="overtimeCheck"
                 onClick={e =>setIsChecked(e.target.checked)}
               />
-              <label class="form-check-label" for="overtimeCheck">Overtime</label>
+              <label class="form-check-label" htmlFor="overtimeCheck">Overtime</label>
             </div>
           </div>
         );
@@ -113,7 +124,7 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
                   id="overtimeCheck"
                   onClick={e =>setIsChecked(e.target.checked)}
                 />
-                <label class="form-check-label" for="overtimeCheck">Overtime</label>
+                <label class="form-check-label" htmlFor="overtimeCheck">Overtime</label>
               </div>
             </div>
           </Fragment>
@@ -147,7 +158,7 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
       ) : (
         <div class="d-flex justify-content-center">
           <form class="row size" onSubmit={handleSubmit}>
-            <label class="form-label p-0" for="gameType">Game Type</label>
+            <label class="form-label p-0" htmlFor="gameType">Game Type</label>
             <div class="col-12 mb-3 d-flex justify-content-center p-0">
               <select class="form-select" id="gameType" value={select} onChange={e => setSelect(e.target.value)}>
                 <option value="Individual">Individual sport</option>
@@ -158,6 +169,18 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
             {selectedOptions(select)}
             <div class="col-12 mb-3 d-flex justify-content-center p-0">
               <button type="submit" class="btn btn-primary size">Create Game</button>
+
+              <Modal show={showCreate} onHide={closeCreate}>
+                <Modal.Body>
+                  <span>
+                    Are you sure you want to create a game?
+                  </span>
+                </Modal.Body>
+                <Modal.Footer>
+                  <button type="button" class="btn btn-secondary" onClick={closeCreate}>Cancel</button>
+                  <button type="button" class="btn btn-primary" onClick={handleModal}>Create game</button>
+                </Modal.Footer>
+              </Modal>
             </div>
             <div class="col-12 d-flex justify-content-center p-0">
               <button type="button" class="btn btn-secondary" onClick={goToMenu}>Back</button>

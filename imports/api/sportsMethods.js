@@ -205,4 +205,22 @@ Meteor.methods({
       $set: { name: newName }
     })
   },
+  'clearTeams'(gameId) {
+    TeamsCollection.update({ gameId: gameId }, {
+      $set: { players: [] }
+    }, { multi: true })
+  },
+  'randomizeTeams'(gameId, players, teams) {
+    let team = 0
+    let playerCount = 0
+    for (let i = 0; i < players.length; i++) {
+      Meteor.call('joinTeam', players[i], teams[team].name, gameId)
+      team++
+      if (team === teams.length) {
+        team = 0
+        playerCount++
+      }
+      if (playerCount === GamesCollection.findOne({ gameId: gameId }).teamSize) break
+    }
+  },
 })

@@ -2,6 +2,7 @@ import React, { useState, Fragment } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Tracker } from 'meteor/tracker'
 import { useTracker } from 'meteor/react-meteor-data';
+import { Modal } from 'react-bootstrap';
 import { PlayersCollection } from '/imports/api/PlayersCollection';
 import { GamesCollection } from '/imports/api/GamesCollection';
 import { GameLobby } from './GameLobby';
@@ -11,6 +12,10 @@ export const PlayerJoin = ({ user, deletePlayer, goToMenu }) => {
   const [gameId, setGameId] = useState("");
   const [playerId, setPlayerId] = useState("");
   const [isFilledIn, setIsFilledIn] = useState(false);
+  const [showStarted, setShowStarted] = useState(false);
+
+  const openStarted = () => setShowStarted(true)
+  const closeStarted = () => setShowStarted(false)
 
   if (PlayersCollection.find({ name: user.username, inGame: true }).count() !== 0 && !gameId) {
     setIsFilledIn(true);
@@ -24,7 +29,7 @@ export const PlayerJoin = ({ user, deletePlayer, goToMenu }) => {
       return;
 
     if (GamesCollection.findOne({ gameId: gameId}).gameStart === true) {
-      alert("Game has already begun")
+      openStarted()
       return;
     }
 
@@ -56,6 +61,17 @@ export const PlayerJoin = ({ user, deletePlayer, goToMenu }) => {
             </div>
             <div class="col-12 d-flex justify-content-center p-0">
               <button type="submit" class="btn btn-primary size">Join</button>
+
+              <Modal show={showStarted} onHide={closeStarted}>
+                <Modal.Body>
+                  <span>
+                    The game has already started
+                  </span>
+                </Modal.Body>
+                <Modal.Footer>
+                  <button type="button" class="btn btn-secondary" onClick={closeStarted}>Ok</button>
+                </Modal.Footer>
+              </Modal>
             </div>
             <div class="col-12 d-flex justify-content-center p-0">
               <button type="button" class="btn btn-secondary" onClick={goToMenu}>Back</button>

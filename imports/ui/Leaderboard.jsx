@@ -1,16 +1,21 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Meteor } from 'meteor/meteor';
+import { Modal } from 'react-bootstrap';
 import { PlayersCollection } from '/imports/api/PlayersCollection';
 import { GamesCollection } from '/imports/api/GamesCollection';
 
 export const Leaderboard = ({ gameId, name, isAdmin, endGame, goToMenu }) => {
   const [disqualified, setDisqualified] = useState(false)
+  const [showLeave, setShowLeave] = useState(false)
 
   const leaveGame = () => {
     Meteor.call('leaveLeaderboardGame', name, (err, res) => {
       goToMenu();
     })
   }
+
+  const openLeave = () => setShowLeave(true)
+  const closeLeave = () => setShowLeave(false)
 
   return (
     <div class="d-flex align-items-center flex-column">
@@ -24,10 +29,26 @@ export const Leaderboard = ({ gameId, name, isAdmin, endGame, goToMenu }) => {
         />
       </div>
       {isAdmin ? (
-        <button type="button" class="btn btn-danger" onClick={endGame}>End game</button>
+        <button type="button" class="btn btn-danger" onClick={openLeave}>End game</button>
       ) : (
-        <button type="button" class="btn btn-danger" onClick={leaveGame}>Leave game</button>
+        <button type="button" class="btn btn-danger" onClick={openLeave}>Leave game</button>
       )}
+
+      <Modal show={showLeave} onHide={closeLeave}>
+        <Modal.Body>
+          {isAdmin ? (
+            <span>Are you sure you want to end the game?</span>
+          ) : (
+            <span>Are you sure you want to leave the game?<br/>You will not be able to join back.</span>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <button type="button" class="btn btn-secondary" onClick={closeLeave}>Cancel</button>
+          <button type="button" class="btn btn-primary" onClick={isAdmin ? endGame : leaveGame}>
+            {isAdmin ? "End Game" : "Leave Game"}
+          </button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }
@@ -183,8 +204,8 @@ const LeaderboardPlayer = ({ player, isAdmin, scoreType, placeTemp }) => {
   return (
     <Fragment>
       <tr>
-        <th scope="row">{place}</th>
-        <td>{player.name}</td>
+        <th scope="row" class="align-middle">{place}</th>
+        <td class="align-middle">{player.name}</td>
         <td>
           {isAdmin ? (
             <Fragment>
@@ -196,7 +217,7 @@ const LeaderboardPlayer = ({ player, isAdmin, scoreType, placeTemp }) => {
                 value={score}
                 onChange={onScoreChange}
               />
-              <button type="button" class="btn btn-primary btn-sm" onClick={saveScore}>Save</button>
+              <button type="button" class="btn btn-primary btn-sm me-1" onClick={saveScore}>Save</button>
               <button type="button" class="btn btn-danger btn-sm" onClick={disqualify}>&times;</button>
             </Fragment>
           ) : (

@@ -8,11 +8,16 @@ import { PlayerJoin } from './PlayerJoin';
 import { CreateGame } from './CreateGame';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.css';
+import { Modal } from 'react-bootstrap';
 
 export const App = () => {
   const [join, setJoin] = useState(false);
   const [create, setCreate] = useState(false);
   const [showButtons, setShowButtons] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [game, setGame] = useState("")
+  const [leaveText, setLeaveText] = useState("")
+  const [showDelete, setShowDelete] = useState(false)
 
   Meteor.subscribe('allPlayers');
   Meteor.subscribe('allGames');
@@ -29,13 +34,38 @@ export const App = () => {
   const deletePlayer = ({ _id }) => Meteor.call('playerDelete', _id);
 
   const logout = () => Meteor.logout();
-  const deleteUser = () => Meteor.call('removeUser');
+  const deleteUser = () => {
+    closeDelete()
+    Meteor.call('removeUser');
+  }
 
   const showMenu = () => {
     setJoin(false);
     setCreate(false);
     setShowButtons(true);
   }
+
+  const joinGame = () => {
+    setJoin(!join);
+    setShowButtons(false);
+  }
+
+  const createGame = () => {
+    if (PlayersCollection.find({ name: user.username, inGame: true }).count() !== 0) {
+      setGame(PlayersCollection.findOne({ name: user.username, inGame: true }).gameId)
+      setLeaveText(PlayersCollection.findOne({ name: user.username, inGame: true }).isAdmin ? "end" : "leave")
+      openCreate()
+    } else {
+      setCreate(!join);
+      setShowButtons(false)
+    }
+  }
+
+  const openCreate = () => setShowCreate(true)
+  const closeCreate = () => setShowCreate(false)
+
+  const openDelete = () => setShowDelete(true)
+  const closeDelete = () => setShowDelete(false)
 
   return (
     <Fragment>
@@ -48,7 +78,17 @@ export const App = () => {
             </div>
             <div>
               <button type="button" class="btn btn-primary mx-2" onClick={logout}>Logout</button>
-              <button type="button" class="btn btn-primary" onClick={deleteUser}>DEL</button>
+              <button type="button" class="btn btn-primary" onClick={openDelete}>DEL</button>
+
+              <Modal show={showDelete} onHide={closeDelete}>
+                <Modal.Body>
+                  <span>Are you sure you want to delete your account?</span>
+                </Modal.Body>
+                <Modal.Footer>
+                  <button type="button" class="btn btn-secondary" onClick={closeDelete}>Cancel</button>
+                  <button type="button" class="btn btn-danger" onClick={deleteUser}>Delete</button>
+                </Modal.Footer>
+              </Modal>
             </div>
           </Fragment>
         ) : ""}
@@ -57,46 +97,54 @@ export const App = () => {
     <div class="container-fluid">
       {user ? (
         <Fragment>
-            {showButtons ? (
-              <div class="row gap-3">
-                <div class="col-12 d-flex justify-content-center">
-                  <button type="button" class="btn btn-primary size" onClick={() => {
-                    setJoin(!join);
-                    setShowButtons(false);
-                  }}>Join Game</button>
-                </div>
-                <div class="col-12 d-flex justify-content-center">
-                  <button type="button" class="btn btn-primary size" onClick={() => {
-                    if (PlayersCollection.find({ name: user.username, inGame: true }).count() !== 0) {
-                      alert(`You are currently in game ${PlayersCollection.findOne({ name: user.username }).gameId}.\nBy creating a new game you will leave/end current game`)
-                    }
-                    setCreate(!join);
-                    setShowButtons(false)
-                  }}>Create Game</button>
-                </div>
+          {showButtons ? (
+            <div class="row gap-3">
+              <div class="col-12 d-flex justify-content-center">
+                <button type="button" class="btn btn-primary size" onClick={joinGame}>Join Game</button>
               </div>
-            ) : ( "" )}
+              <div class="col-12 d-flex justify-content-center">
+                <button type="button" class="btn btn-primary size" onClick={createGame}>Create Game</button>
 
-            {join ? ( <PlayerJoin
-              user={user}
-              deletePlayer={deletePlayer}
-              goToMenu={showMenu}
-             /> ) : ( "" )}
+                <Modal show={showCreate} onHide={closeCreate}>
+                  <Modal.Body>
+                    <span>
+                      You are currently in game {game}<br/>
+                      By creating a new game you will {leaveText} your current game
+                    </span>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <button type="button" class="btn btn-secondary" onClick={closeCreate}>Cancel</button>
+                    <button type="button" class="btn btn-primary" onClick={() => {
+                      closeCreate()
+                      setCreate(!join)
+                      setShowButtons(false)
+                    }}>Continue</button>
+                  </Modal.Footer>
+                </Modal>
+              </div>
+            </div>
+          ) : ( "" )}
 
-            {create ? ( <CreateGame
-              user={user}
-              deletePlayer={deletePlayer}
-              goToMenu={showMenu}
-            /> ) : ( "" )}
+          {join ? ( <PlayerJoin
+            user={user}
+            deletePlayer={deletePlayer}
+            goToMenu={showMenu}
+           /> ) : ( "" )}
 
-            All players
-            <ul className="players">
-              { players.map(player => <Admin
-                key={ player._id }
-                player={ player }
-                onDeleteClick={ deletePlayer }
-              />) }
-            </ul>
+          {create ? ( <CreateGame
+            user={user}
+            deletePlayer={deletePlayer}
+            goToMenu={showMenu}
+          /> ) : ( "" )}
+
+          All players
+          <ul className="players">
+            { players.map(player => <Admin
+              key={ player._id }
+              player={ player }
+              onDeleteClick={ deletePlayer }
+            />) }
+          </ul>
         </Fragment>
       ) : (
         <Fragment>

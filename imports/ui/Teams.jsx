@@ -61,7 +61,7 @@ const Team = ({ teams, team, player, gameId, maxPlayers, isAdmin }) => {
     var displayLeave = "none";
   }
 
-  if (team.players.length === maxPlayers) {
+  if (team.players.length >= maxPlayers) {
     displayJoin = "none";
   }
 
@@ -85,7 +85,7 @@ const Team = ({ teams, team, player, gameId, maxPlayers, isAdmin }) => {
   const formLength = teamName.length ? teamName.length : 1
 
   return (
-    <div class="d-flex align-items-center flex-column">
+    <div class="d-flex align-items-center flex-column mb-3">
       <div>
         <span id="hide" class="p-0 m-0" ref={refHidden}>{teamName}&nbsp;&nbsp;</span>
         <input
@@ -105,8 +105,8 @@ const Team = ({ teams, team, player, gameId, maxPlayers, isAdmin }) => {
       { team.players.map(teamPlayer => <TeamPlayer
         player={teamPlayer}
       />) }
-      <button type="button" class="btn btn-primary btn-sm mb-3 size-100px" onClick={handleJoinClick} style={{display: displayJoin}}>Join team</button>
-      <button type="button" class="btn btn-danger btn-sm mb-3 size-100px" onClick={handleLeaveClick} style={{display: displayLeave}}>Leave team</button>
+      <button type="button" class="btn btn-primary btn-sm size-100px" onClick={handleJoinClick} style={{display: displayJoin}}>Join team</button>
+      <button type="button" class="btn btn-danger btn-sm size-100px" onClick={handleLeaveClick} style={{display: displayLeave}}>Leave team</button>
     </div>
   );
 };
