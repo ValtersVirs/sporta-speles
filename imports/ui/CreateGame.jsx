@@ -1,11 +1,11 @@
 import React, { useState, Fragment } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
-import { Modal } from 'react-bootstrap';
+import { Modal, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { PlayersCollection } from '/imports/api/PlayersCollection';
 import { GameLobby } from './GameLobby';
 
-export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
+export const CreateGame = ({ user, deletePlayer, goToMenu, removed }) => {
   const [select, setSelect] = useState('Individual');
   const [teamSize, setTeamSize] = useState('');
   const [teamNumber, setTeamNumber] = useState('');
@@ -37,18 +37,13 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
     closeCreate()
 
     if (PlayersCollection.find({ name: user.username, inGame: true }).count() !== 0) {
-      //if isAdmin === true -> end game  else  leave game
       if (PlayersCollection.findOne({ name: user.username, inGame: true }).isAdmin === true) {
-        //isAdmin === true
         Meteor.call('gameEnd', PlayersCollection.findOne({ name: user.username, inGame: true }).gameId)
         createGame();
       } else {
-        //isAdmin === false
         PlayersCollection.findOne({ name: user.username }).status ? (
-          //game has started
           Meteor.call('leaveStartedGame', user.username)
         ) : (
-          //game hasnt started
           Meteor.call('leaveGame', PlayersCollection.findOne({ name: user.username, inGame: true }))
         )
         createGame();
@@ -153,6 +148,7 @@ export const CreateGame = ({ user, deletePlayer, goToMenu }) => {
               gameId={randomId}
               deletePlayer={deletePlayer}
               goToMenu={goToMenu}
+              removed={removed}
             />
         </div>
       ) : (

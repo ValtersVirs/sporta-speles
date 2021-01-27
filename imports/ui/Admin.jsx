@@ -1,13 +1,15 @@
 import React from 'react';
+import { FaTimes } from 'react-icons/fa';
 
 export const Admin = ({ player, onDeleteClick }) => {
   return (
     <div class="d-flex justify-content-center mb-1">
       <span class="align-bottom">{player.name} {player.gameId}</span>
-      <button type="button" class="btn btn-danger btn-sm ms-2 p-0 fw-bold fs-6"
-        style={{height: "25px", width: "25px"}}
-        onClick={() => onDeleteClick(player)}
-      >&#x2715;</button>
+      {player.isAdmin ? "" : (
+        <button type="button" class="btn btn-danger btn-sm ms-2 p-0 d-flex justify-content-center align-items-center box-25px"
+          onClick={() => onDeleteClick(player)}
+        ><FaTimes/></button>
+      )}
     </div>
   );
 };

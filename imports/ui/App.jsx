@@ -9,6 +9,7 @@ import { CreateGame } from './CreateGame';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.css';
 import { Modal } from 'react-bootstrap';
+import { FaTrash } from 'react-icons/fa';
 
 export const App = () => {
   const [join, setJoin] = useState(false);
@@ -18,6 +19,7 @@ export const App = () => {
   const [game, setGame] = useState("")
   const [leaveText, setLeaveText] = useState("")
   const [showDelete, setShowDelete] = useState(false)
+  const [showRemoved, setShowRemoved] = useState(false)
 
   Meteor.subscribe('allPlayers');
   Meteor.subscribe('allGames');
@@ -45,6 +47,11 @@ export const App = () => {
     setShowButtons(true);
   }
 
+  const removed = () => {
+    showMenu()
+    openRemoved()
+  }
+
   const joinGame = () => {
     setJoin(!join);
     setShowButtons(false);
@@ -67,6 +74,9 @@ export const App = () => {
   const openDelete = () => setShowDelete(true)
   const closeDelete = () => setShowDelete(false)
 
+  const openRemoved = () => setShowRemoved(true)
+  const closeRemoved = () => setShowRemoved(false)
+
   return (
     <Fragment>
     <nav class="navbar navbar-custom navbar-expand navbar-dark bg-dark">
@@ -78,7 +88,7 @@ export const App = () => {
             </div>
             <div>
               <button type="button" class="btn btn-primary mx-2" onClick={logout}>Logout</button>
-              <button type="button" class="btn btn-primary" onClick={openDelete}>DEL</button>
+              <button type="button" class="btn btn-primary" onClick={openDelete}><FaTrash/></button>
 
               <Modal show={showDelete} onHide={closeDelete}>
                 <Modal.Body>
@@ -122,6 +132,15 @@ export const App = () => {
                   </Modal.Footer>
                 </Modal>
               </div>
+
+              <Modal show={showRemoved} onHide={closeRemoved}>
+                <Modal.Body>
+                  You have been removed from the game
+                </Modal.Body>
+                <Modal.Footer>
+                  <button type="button" class="btn btn-primary" onClick={closeRemoved}>Ok</button>
+                </Modal.Footer>
+              </Modal>
             </div>
           ) : ( "" )}
 
@@ -129,22 +148,26 @@ export const App = () => {
             user={user}
             deletePlayer={deletePlayer}
             goToMenu={showMenu}
+            removed={removed}
            /> ) : ( "" )}
 
           {create ? ( <CreateGame
             user={user}
             deletePlayer={deletePlayer}
             goToMenu={showMenu}
+            removed={removed}
           /> ) : ( "" )}
 
-          All players
-          <ul className="players">
+          <div class="d-flex justify-content-center mt-5 mb-2">
+            <span class="fw-bold">All players</span>
+          </div>
+          <div>
             { players.map(player => <Admin
               key={ player._id }
               player={ player }
               onDeleteClick={ deletePlayer }
             />) }
-          </ul>
+          </div>
         </Fragment>
       ) : (
         <Fragment>

@@ -10,10 +10,12 @@ import { Admin } from './Admin'
 import { Tournament } from './Tournament';
 import { Leaderboard } from './Leaderboard';
 import { Teams } from './Teams'
+import { FaRandom, FaTimes, FaCheck } from 'react-icons/fa';
 
-export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
+export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu, removed }) => {
   const [showStartGame, setShowStartGame] = useState(false)
   const [showLeave, setShowLeave] = useState(false)
+  const [showRandom, setShowRandom] = useState(false)
 
   const game = useTracker( () => GamesCollection.findOne( { gameId: gameId } ));
   const curGameTeams = useTracker( () => TeamsCollection.find({ gameId: gameId }, {
@@ -56,11 +58,6 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
     })
   }
 
-  const removed = () => {
-    goToMenu();
-    alert("You have been removed from the game");
-  }
-
   var gameType
   if (game.gameType === "Individual") gameType = "Individual game"
   else if (game.gameType === "Team") gameType = "Team game"
@@ -80,6 +77,8 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
     Meteor.call('clearTeams', gameId, (err, res) => {
       Meteor.call('randomizeTeams', gameId, newArr, curGameTeams)
     })
+
+    closeRandom()
   }
 
   const openStartGame = () => setShowStartGame(true)
@@ -87,6 +86,9 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
 
   const openLeave = () => setShowLeave(true)
   const closeLeave = () => setShowLeave(false)
+
+  const openRandom = () => setShowRandom(true)
+  const closeRandom = () => setShowRandom(false)
 
   return (
     <div>
@@ -119,17 +121,20 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
               <div class="d-flex align-items-center flex-column mb-3">
                 <p class="h1">{game.gameId}</p>
                 <p class="mb-0">{gameType}</p>
-                <p>Overtime {game.isOvertime ? <span class="badge bg-success">✓</span> : <span class="badge bg-danger">✕</span>}</p>
+                <p class="d-flex">Overtime {game.isOvertime ?
+                  <span class="badge bg-success d-flex justify-content-center align-items-center box-25px ms-1 p-0"><FaCheck/></span> :
+                  <span class="badge bg-danger d-flex justify-content-center align-items-center box-25px ms-1 p-0"><FaTimes/></span>}
+                </p>
                 {curPlayer.isAdmin ? (
                   <Fragment>
                     <p class="mb-1">Players in lobby <span class="badge bg-secondary">{curGamePlayers.length}</span></p>
-                    <ul className="players">
+                    <div>
                       { curGamePlayers.map(player => <Admin
                         key={ player._id }
                         player={ player }
                         onDeleteClick={ deletePlayer }
                       />) }
-                    </ul>
+                    </div>
 
                     <button type="button" class="btn btn-primary size" onClick={openStartGame}>Start game</button>
 
@@ -146,19 +151,33 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu }) => {
                 ) : (
                   <Fragment>
                     <p class="mb-2">Players in lobby <span class="badge bg-secondary">{curGamePlayers.length}</span></p>
-                    <ul className="players">
+                    <div>
                       { curGamePlayers.map(player => <Player
                         key={ player._id }
                         player={ player }
                       />) }
-                    </ul>
+                    </div>
                   </Fragment>
                 )}
               </div>
 
               {game.gameType === "Team" ? (
                 <Fragment>
-                  <button type="button" class="btn btn-secondary mb-3 btn-sm" onClick={randomizeTeams}>Random teams</button>
+                  {curPlayer.isAdmin ? (
+                    <Fragment>
+                      <button type="button" class="btn btn-secondary mb-3 btn-sm d-flex align-items-center" onClick={openRandom}><FaRandom/>&nbsp;Teams</button>
+
+                      <Modal show={showRandom} onHide={closeRandom}>
+                        <Modal.Body>
+                          Are you sure you want to randomize teams?
+                        </Modal.Body>
+                        <Modal.Footer>
+                        <button type="button" class="btn btn-secondary" onClick={closeRandom}>Cancel</button>
+                        <button type="button" class="btn btn-primary" onClick={randomizeTeams}>Randomize</button>
+                        </Modal.Footer>
+                      </Modal>
+                    </Fragment>
+                  ) : ""}
                   <Teams
                     gameId={game.gameId}
                     player={curPlayer}

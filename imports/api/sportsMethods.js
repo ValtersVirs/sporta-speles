@@ -84,11 +84,11 @@ Meteor.methods({
       $set: { round: 1, status: "playing", points: 0, winner: false }
     }, { multi: true })
   },
-  'matchCompleted'(winner, loser, winnerScore, loserScore, gameId, gameType) {
+  'matchCompleted'(winner, loser, winnerScore, loserScore, gameId, gameType, points) {
     const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
 
     collection.update({ name: winner, gameId: gameId }, {
-      $inc: { round: 1, points: 1 }
+      $inc: { round: 1, points: points }
     }),
     collection.update({ name: loser, gameId: gameId }, {
       $set: { status: "lost", winnerScore: winnerScore, loserScore: loserScore }

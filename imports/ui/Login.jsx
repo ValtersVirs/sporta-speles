@@ -6,17 +6,21 @@ export const Login = ({ goToMenu }) => {
   const [register, setRegister] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(false);
 
   const handleSubmit = e => {
     e.preventDefault();
 
-    goToMenu();
+    Meteor.loginWithPassword(username, password, (err) => {
+      if (err) setError(true)
+    });
 
-    Meteor.loginWithPassword(username, password);
+    goToMenu();
   };
 
   const goToLogin = () => {
     setRegister(false)
+    setError(false)
   }
 
   return (
@@ -28,7 +32,7 @@ export const Login = ({ goToMenu }) => {
         />
       ) : (
         <form onSubmit={handleSubmit} className="login-form">
-          <div class="vertical-input-group mb-3 mt-0">
+          <div class="vertical-input-group my-0">
             <div class="input-group">
               <input
                 type="text"
@@ -50,7 +54,10 @@ export const Login = ({ goToMenu }) => {
               />
             </div>
           </div>
-          <button type="submit" class="btn btn-primary size mb-3">Sign In</button>
+          {error ? (
+            <span class="text-danger text-center size">Invalid username or password</span>
+          ) : ""}
+          <button type="submit" class="btn btn-primary size my-3">Sign In</button>
           <button type="button" class="btn btn-secondary size"  onClick={() => setRegister(true)}>Register</button>
         </form>
       )}

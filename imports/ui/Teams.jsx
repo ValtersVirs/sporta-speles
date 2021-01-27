@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, Fragment } from 'react';
 import { Meteor } from 'meteor/meteor';
+import { Modal } from 'react-bootstrap';
 import { TeamsCollection } from '/imports/api/TeamsCollection';
+import { FaRegEdit } from 'react-icons/fa';
 
 export const Teams = ({ gameId, player, maxPlayers, isAdmin }) => {
   const curGameTeams = TeamsCollection.find({ gameId: gameId }, {
@@ -26,6 +28,8 @@ const Team = ({ teams, team, player, gameId, maxPlayers, isAdmin }) => {
   const [teamName, setTeamName] = useState(team.name)
   const refHidden = useRef(null)
   const refInput = useRef(null)
+  const [saveDisabled, setSaveDisabled] = useState(true)
+  const [showNameSet, setShowNameSet] = useState(false)
 
   var readonly
 
@@ -34,6 +38,9 @@ const Team = ({ teams, team, player, gameId, maxPlayers, isAdmin }) => {
   } else {
     readonly = true
   }
+
+  const openNameSet = () => setShowNameSet(true)
+  const closeNameSet = () => setShowNameSet(false)
 
   useEffect(() => {
     setTeamName(team.name)
@@ -66,43 +73,65 @@ const Team = ({ teams, team, player, gameId, maxPlayers, isAdmin }) => {
   }
 
   const handleClick = () => {
-    if (TeamsCollection.find({ gameId: gameId, name: teamName }).count()) {
-      alert(`${teamName} already exists`)
-    } else {
-      Meteor.call('changeTeamName', gameId, team.name, teamName)
-      alert(`Team name set to ${teamName}`)
-    }
+    Meteor.call('changeTeamName', gameId, team.name, teamName.trim(), (err, res) => {
+      openNameSet()
+    })
   }
 
   const onNameChange = e => {
-    setTeamName(e.target.value)
+    if (e.target.value.length > 20) return
+    else setTeamName(e.target.value)
   }
 
   useEffect(() => {
-    refInput.current.style.width = `${refHidden.current.offsetWidth}px`
-  }, [teamName])
+    if (refHidden.current.offsetWidth <= 20) {
+      refInput.current.style.width = "20px"
+    } else if (refHidden.current.offsetWidth <= 300) {
+      refInput.current.style.width = `${refHidden.current.offsetWidth + 1}px`
+    } else {
+      refInput.current.style.width = "300px"
+    }
 
-  const formLength = teamName.length ? teamName.length : 1
+    if (teamName.trim() === "") {
+      setSaveDisabled(true)
+    } else if (!(teams.every(t => t.name !== teamName.trim()))) {
+      setSaveDisabled(true)
+    } else {
+      setSaveDisabled(false)
+    }
+  }, [teamName, team.name])
 
   return (
     <div class="d-flex align-items-center flex-column mb-3">
       <div>
-        <span id="hide" class="p-0 m-0" ref={refHidden}>{teamName}&nbsp;&nbsp;</span>
+        {isAdmin ? (
+          <div class="d-flex justify-content-center">
+            <button type="button" class="btn-transparent btn-focus align-middle p-0" disabled={saveDisabled} onClick={handleClick}><FaRegEdit/></button>
+
+            <Modal show={showNameSet} onHide={closeNameSet}>
+              <Modal.Body>
+                Teams name set to {teamName}
+              </Modal.Body>
+              <Modal.Footer>
+                <button type="button" class="btn btn-primary" onClick={closeNameSet}>Ok</button>
+              </Modal.Footer>
+            </Modal>
+          </div>
+        ) : (
+          ""
+        )}
+        <span id="hide" class="fw-bold p-0 m-0" ref={refHidden}>{teamName}</span>
         <input
-          class="p-0 m-0 score fw-bold"
+          class="p-0 m-0 score fw-bold align-middle overflow-hidden d-block"
           type="text"
           ref={refInput}
           value={teamName}
           onChange={onNameChange}
           readOnly={readonly}
         />
-        {isAdmin ? (
-          <span class="badge bg-secondary" role="button" onClick={handleClick}>edit</span>
-        ) : (
-          ""
-        )}
       </div>
       { team.players.map(teamPlayer => <TeamPlayer
+        key={teamPlayer}
         player={teamPlayer}
       />) }
       <button type="button" class="btn btn-primary btn-sm size-100px" onClick={handleJoinClick} style={{display: displayJoin}}>Join team</button>

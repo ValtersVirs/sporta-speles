@@ -1,26 +1,38 @@
 import { Meteor } from 'meteor/meteor';
-import React, { useState } from 'react';
+import React, { useState, Fragment } from 'react';
 
 export const Register = ({ goToMenu, goToLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState(false);
+  const [length, setLength] = useState(false);
 
   const handleSubmit = e => {
     e.preventDefault();
 
     if (!username || !password) return;
 
+    if (username.length > 20) {
+      setLength(true)
+      return
+    }
+
     goToMenu();
 
     Accounts.createUser({
       username: username,
       password: password,
+    }, (err) => {
+      if (err) {
+        setLength(false)
+        setError(true)
+      }
     });
   };
 
   return (
     <form onSubmit={handleSubmit} className="login-form">
-      <div class="vertical-input-group mb-3 mt-0">
+      <div class="vertical-input-group my-0">
         <div class="input-group">
           <input
             type="text"
@@ -43,8 +55,16 @@ export const Register = ({ goToMenu, goToLogin }) => {
           />
         </div>
       </div>
-
-      <button type="submit" class="btn btn-primary size mb-3">Create an account</button>
+      {length ? (
+        <span class="text-danger text-center size">Username cannot exceed 20 characters</span>
+      ) : (
+        <Fragment>
+          {error ? (
+            <span class="text-danger text-center size">Username already exists</span>
+          ) : ""}
+        </Fragment>
+      )}
+      <button type="submit" class="btn btn-primary size my-3">Create an account</button>
       <button type="button" class="btn btn-secondary size" onClick={goToLogin}>Back</button>
     </form>
   );

@@ -11,6 +11,24 @@
   width: 100px;
 }
 
+.break-word {
+  word-wrap: break-word;
+}
+
+.box-25px {
+  height: 25px;
+  width: 25px;
+}
+
+.btn-transparent {
+  background: transparent;
+  border: none;
+}
+
+.btn-focus:focus{
+  outline: none;
+}
+
 .vertical-input-group .input-group:first-child {
     padding-bottom: 0;
 }
@@ -56,11 +74,6 @@
 
 .fill-form > div, .fill-form > button {
   margin: 10px;
-}
-
-.players {
-  list-style-type: none;
-  padding-left: 0;
 }
 
 .match-list {

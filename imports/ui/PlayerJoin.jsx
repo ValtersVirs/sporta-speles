@@ -8,7 +8,7 @@ import { GamesCollection } from '/imports/api/GamesCollection';
 import { GameLobby } from './GameLobby';
 import { Player } from './Player';
 
-export const PlayerJoin = ({ user, deletePlayer, goToMenu }) => {
+export const PlayerJoin = ({ user, deletePlayer, goToMenu, removed }) => {
   const [gameId, setGameId] = useState("");
   const [playerId, setPlayerId] = useState("");
   const [isFilledIn, setIsFilledIn] = useState(false);
@@ -46,6 +46,7 @@ export const PlayerJoin = ({ user, deletePlayer, goToMenu }) => {
           gameId={gameId}
           deletePlayer={deletePlayer}
           goToMenu={goToMenu}
+          removed={removed}
         />
       ) : (
         <div class="d-flex justify-content-center">
