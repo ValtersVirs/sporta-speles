@@ -61,21 +61,23 @@ export const PlayerJoin = ({ user, deletePlayer, goToMenu, removed }) => {
               />
             </div>
             <div class="col-12 d-flex justify-content-center p-0">
-              <button type="submit" class="btn btn-primary size">Join</button>
+              <button type="submit" class="btn btn-main size">Join</button>
 
-              <Modal show={showStarted} onHide={closeStarted}>
+              <Modal show={showStarted} onHide={closeStarted} centered>
                 <Modal.Body>
-                  <span>
-                    The game has already started
-                  </span>
+                  <div class="d-flex justify-content-center">
+                    <span>The game has already started</span>
+                  </div>
                 </Modal.Body>
                 <Modal.Footer>
-                  <button type="button" class="btn btn-secondary" onClick={closeStarted}>Ok</button>
+                  <div class="w-100 d-flex justify-content-center">
+                    <button type="button" class="btn btn-ok" onClick={closeStarted}>Ok</button>
+                  </div>
                 </Modal.Footer>
               </Modal>
             </div>
             <div class="col-12 d-flex justify-content-center p-0">
-              <button type="button" class="btn btn-secondary" onClick={goToMenu}>Back</button>
+              <button type="button" class="btn btn-main2" onClick={goToMenu}>Back</button>
             </div>
           </form>
         </div>

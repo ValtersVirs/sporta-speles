@@ -6,10 +6,12 @@ import { Login } from './Login';
 import { Admin } from './Admin';
 import { PlayerJoin } from './PlayerJoin';
 import { CreateGame } from './CreateGame';
+import { Settings } from './Settings';
 import 'bootstrap';
-import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal } from 'react-bootstrap';
 import { FaTrash } from 'react-icons/fa';
+import { BsFillGearFill } from 'react-icons/bs';
 
 export const App = () => {
   const [join, setJoin] = useState(false);
@@ -20,6 +22,7 @@ export const App = () => {
   const [leaveText, setLeaveText] = useState("")
   const [showDelete, setShowDelete] = useState(false)
   const [showRemoved, setShowRemoved] = useState(false)
+  const [settings, setSettings] = useState(false)
 
   Meteor.subscribe('allPlayers');
   Meteor.subscribe('allGames');
@@ -36,14 +39,11 @@ export const App = () => {
   const deletePlayer = ({ _id }) => Meteor.call('playerDelete', _id);
 
   const logout = () => Meteor.logout();
-  const deleteUser = () => {
-    closeDelete()
-    Meteor.call('removeUser');
-  }
 
   const showMenu = () => {
     setJoin(false);
     setCreate(false);
+    setSettings(false);
     setShowButtons(true);
   }
 
@@ -68,6 +68,11 @@ export const App = () => {
     }
   }
 
+  const openSettings = () => {
+    setSettings(true);
+    setShowButtons(false);
+  }
+
   const openCreate = () => setShowCreate(true)
   const closeCreate = () => setShowCreate(false)
 
@@ -79,109 +84,106 @@ export const App = () => {
 
   return (
     <Fragment>
-    <nav class="navbar navbar-custom navbar-expand navbar-dark bg-dark">
-      <div class="container-fluid">
+    <div class="container-fluid min-100 d-flex flex-column">
+      <nav class="navbar navbar-custom navbar-expand navbar-dark fixed-top bg-nav mb-0">
+        <div class="container-fluid">
+          {user ? (
+            <Fragment>
+              <div class="mr-auto">
+                <span class="navbar-text-main fw-bold">{user.username}</span>
+              </div>
+              <div class="d-flex">
+                <button type="button" class="btn btn-nav mx-2 fw-bold" onClick={logout}>Logout</button>
+                <button type="button" class="btn btn-nav d-flex align-items-center" onClick={openSettings}><BsFillGearFill/></button>
+              </div>
+            </Fragment>
+          ) : ""}
+        </div>
+      </nav>
+      <div class="row flex-grow-1 bg-main d-flex flex-column" style={{paddingTop: 100, paddingBottom: 100, marginTop: 110, marginBottom: 50}}>
+        <div>
         {user ? (
           <Fragment>
-            <div class="mr-auto">
-              <span class="navbar-text">User: {user.username}</span>
-            </div>
-            <div>
-              <button type="button" class="btn btn-primary mx-2" onClick={logout}>Logout</button>
-              <button type="button" class="btn btn-primary" onClick={openDelete}><FaTrash/></button>
+            {showButtons ? (
+              <div class="row gap-3 d-flex justify-content-center">
+                <div class="col-12 d-flex justify-content-center">
+                  <button type="button" class="btn btn-main size" onClick={joinGame}>Join Game</button>
+                </div>
+                <hr class="m-0"/>
+                <div class="col-12 d-flex justify-content-center">
+                  <button type="button" class="btn btn-main size" onClick={createGame}>Create Game</button>
 
-              <Modal show={showDelete} onHide={closeDelete}>
-                <Modal.Body>
-                  <span>Are you sure you want to delete your account?</span>
-                </Modal.Body>
-                <Modal.Footer>
-                  <button type="button" class="btn btn-secondary" onClick={closeDelete}>Cancel</button>
-                  <button type="button" class="btn btn-danger" onClick={deleteUser}>Delete</button>
-                </Modal.Footer>
-              </Modal>
-            </div>
-          </Fragment>
-        ) : ""}
-      </div>
-    </nav>
-    <div class="container-fluid">
-      {user ? (
-        <Fragment>
-          {showButtons ? (
-            <div class="row gap-3">
-              <div class="col-12 d-flex justify-content-center">
-                <button type="button" class="btn btn-primary size" onClick={joinGame}>Join Game</button>
-              </div>
-              <div class="col-12 d-flex justify-content-center">
-                <button type="button" class="btn btn-primary size" onClick={createGame}>Create Game</button>
+                  <Modal show={showCreate} onHide={closeCreate} centered>
+                    <Modal.Body>
+                      <div class="d-flex justify-content-center">
+                        <span>
+                          You are currently in game {game}<br/>
+                          By creating a new game you will {leaveText} your current game
+                        </span>
+                      </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <div class="w-100 d-flex justify-content-center">
+                        <button type="button" class="btn btn-cancel me-2" onClick={closeCreate}>Cancel</button>
+                        <button type="button" class="btn btn-ok" onClick={() => {
+                          closeCreate()
+                          setCreate(!join)
+                          setShowButtons(false)
+                      }}>Continue</button>
+                      </div>
+                    </Modal.Footer>
+                  </Modal>
+                </div>
 
-                <Modal show={showCreate} onHide={closeCreate}>
+                <Modal show={showRemoved} onHide={closeRemoved} centered>
                   <Modal.Body>
-                    <span>
-                      You are currently in game {game}<br/>
-                      By creating a new game you will {leaveText} your current game
-                    </span>
+                    <div class="d-flex justify-content-center">
+                      <span>You have been removed from the game</span>
+                    </div>
                   </Modal.Body>
                   <Modal.Footer>
-                    <button type="button" class="btn btn-secondary" onClick={closeCreate}>Cancel</button>
-                    <button type="button" class="btn btn-primary" onClick={() => {
-                      closeCreate()
-                      setCreate(!join)
-                      setShowButtons(false)
-                    }}>Continue</button>
+                    <div class="w-100 d-flex justify-content-center">
+                      <button type="button" class="btn btn-ok" onClick={closeRemoved}>Ok</button>
+                    </div>
                   </Modal.Footer>
                 </Modal>
               </div>
+            ) : ( "" )}
 
-              <Modal show={showRemoved} onHide={closeRemoved}>
-                <Modal.Body>
-                  You have been removed from the game
-                </Modal.Body>
-                <Modal.Footer>
-                  <button type="button" class="btn btn-primary" onClick={closeRemoved}>Ok</button>
-                </Modal.Footer>
-              </Modal>
-            </div>
-          ) : ( "" )}
+            {join ? ( <PlayerJoin
+              user={user}
+              deletePlayer={deletePlayer}
+              goToMenu={showMenu}
+              removed={removed}
+             /> ) : ( "" )}
 
-          {join ? ( <PlayerJoin
-            user={user}
-            deletePlayer={deletePlayer}
-            goToMenu={showMenu}
-            removed={removed}
-           /> ) : ( "" )}
+            {create ? ( <CreateGame
+              user={user}
+              deletePlayer={deletePlayer}
+              goToMenu={showMenu}
+              removed={removed}
+            /> ) : ( "" )}
 
-          {create ? ( <CreateGame
-            user={user}
-            deletePlayer={deletePlayer}
-            goToMenu={showMenu}
-            removed={removed}
-          /> ) : ( "" )}
-
-          <div class="d-flex justify-content-center mt-5 mb-2">
-            <span class="fw-bold">All players</span>
-          </div>
-          <div>
-            { players.map(player => <Admin
-              key={ player._id }
-              player={ player }
-              onDeleteClick={ deletePlayer }
-            />) }
-          </div>
-        </Fragment>
-      ) : (
-        <Fragment>
-          {Meteor.loggingIn() ? (
-            <div class="d-flex justify-content-center">
-              <div class="spinner-border" role="status">
-                <span class="visually-hidden">Loading...</span>
+            {settings ? ( <Settings
+              user={user}
+              goToMenu={showMenu}
+            /> ) : ( "" )}
+          </Fragment>
+        ) : (
+          <Fragment>
+            {Meteor.loggingIn() ? (
+              <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
               </div>
-            </div>
-          ) : (
-            <Login goToMenu={showMenu}/>
-          )}
-        </Fragment>
-      )}
+            ) : (
+              <Login goToMenu={showMenu}/>
+            )}
+          </Fragment>
+        )}
+        </div>
+      </div>
     </div>
     </Fragment>
   );

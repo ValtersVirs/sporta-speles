@@ -4,7 +4,7 @@ import { Modal, OverlayTrigger, Tooltip, Collapse } from 'react-bootstrap';
 import { GamesCollection } from '/imports/api/GamesCollection';
 import { AiOutlineQuestionCircle } from 'react-icons/ai';
 
-export const Match = ({ match, gameId, collection, matchNr, roundNr, participants, isAdmin, disabled, showTeams, matchLoser }) => {
+export const Match = ({ match, gameId, collection, matchNr, maxMatches, roundNr, participants, isAdmin, disabled, showTeams, matchLoser }) => {
   const [isDisabled, setIsDisabled] = useState(disabled);
   const [teamOne, setTeamOne] = useState('');
   const [teamTwo, setTeamTwo] = useState('');
@@ -103,17 +103,17 @@ export const Match = ({ match, gameId, collection, matchNr, roundNr, participant
   );
 
   return (
-    <div class="mb-4 w-100">
+    <div class="w-100 d-flex flex-column align-items-center">
       <div class="row">
         {match}
       </div>
       {isDisabled ? (
-        <div class="row">
+        <div class="row w-100">
           <div class="col-5 d-flex justify-content-center">
             <b class={`text-${color[0]}`}>{score[0]}</b>
           </div>
           <div class="col-2 d-flex justify-content-center">
-            <span>:</span>
+            <b>:</b>
           </div>
           <div class="col-5 d-flex justify-content-center">
             <b class={`text-${color[1]}`}>{score[1]}</b>
@@ -124,7 +124,7 @@ export const Match = ({ match, gameId, collection, matchNr, roundNr, participant
       )}
 
       {gameType === "Team" ? (
-        <div class="row">
+        <div class="row w-100">
           <div class="col-5 d-flex justify-content-center">
             <Collapse
               in={showTeam.team1}
@@ -155,18 +155,26 @@ export const Match = ({ match, gameId, collection, matchNr, roundNr, participant
       )}
 
       {isAdmin ? (
-        <div class="row">
+        <div class="row mt-1">
           <div class="col-12 d-flex justify-content-center">
-            <button type="button" class={`btn btn-primary btn-sm ${hideButton}`} onClick={showModal} disabled={isDisabled}>Set score</button>
+            <button type="button" class={`btn btn-main btn-sm ${hideButton}`} onClick={showModal} disabled={isDisabled}>Set score</button>
           </div>
         </div>
       ) : (
         ""
       )}
 
-      <Modal show={show} onHide={closeModal}>
+      {(matchNr + 1) < maxMatches ? (
+        <hr class="my-2" />
+      ) : ""}
+
+      <Modal show={show} onHide={closeModal} centered>
         <Modal.Header>
-          <Modal.Title>Set score for teams</Modal.Title>
+          <Modal.Title>
+            <div class="w-100 d-flex justify-content-center">
+              <span>Set score for teams</span>
+            </div>
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div class="row">
@@ -224,8 +232,10 @@ export const Match = ({ match, gameId, collection, matchNr, roundNr, participant
           ) : ""}
         </Modal.Body>
         <Modal.Footer>
-          <button type="button" class="btn btn-secondary" onClick={closeModal}>Close</button>
-          <button type="button" class="btn btn-primary" onClick={scoreSubmit} disabled={saveDisabled}>Save Changes</button>
+          <div class="w-100 d-flex justify-content-center">
+            <button type="button" class="btn btn-cancel me-2" onClick={closeModal}>Close</button>
+            <button type="button" class="btn btn-ok" onClick={scoreSubmit} disabled={saveDisabled}>Save Changes</button>
+          </div>
         </Modal.Footer>
       </Modal>
 

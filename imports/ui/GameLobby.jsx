@@ -120,11 +120,13 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu, removed 
             <div class="d-flex align-items-center flex-column">
               <div class="d-flex align-items-center flex-column mb-3">
                 <p class="h1">{game.gameId}</p>
-                <p class="mb-0">{gameType}</p>
-                <p class="d-flex">Overtime {game.isOvertime ?
+                <hr class="m-0" />
+                <p class="mb-0 mt-2">{gameType}</p>
+                <p class="d-flex mb-2">Overtime {game.isOvertime ?
                   <span class="badge bg-success d-flex justify-content-center align-items-center box-25px ms-1 p-0"><FaCheck/></span> :
                   <span class="badge bg-danger d-flex justify-content-center align-items-center box-25px ms-1 p-0"><FaTimes/></span>}
                 </p>
+                <hr class="m-0 mb-2" />
                 {curPlayer.isAdmin ? (
                   <Fragment>
                     <p class="mb-1">Players in lobby <span class="badge bg-secondary">{curGamePlayers.length}</span></p>
@@ -136,15 +138,19 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu, removed 
                       />) }
                     </div>
 
-                    <button type="button" class="btn btn-primary size" onClick={openStartGame}>Start game</button>
+                    <button type="button" class="btn btn-main size" onClick={openStartGame}>Start game</button>
 
-                    <Modal show={showStartGame} onHide={closeStartGame}>
+                    <Modal show={showStartGame} onHide={closeStartGame} centered>
                       <Modal.Body>
-                        Are you sure you want to start the game?
+                        <div class="d-flex justify-content-center">
+                          <span>Are you sure you want to start the game?</span>
+                        </div>
                       </Modal.Body>
                       <Modal.Footer>
-                      <button type="button" class="btn btn-secondary" onClick={closeStartGame}>Cancel</button>
-                      <button type="button" class="btn btn-primary" onClick={gameStart}>Start game</button>
+                        <div class="w-100 d-flex justify-content-center">
+                          <button type="button" class="btn btn-cancel me-2" onClick={closeStartGame}>Cancel</button>
+                          <button type="button" class="btn btn-ok" onClick={gameStart}>Start game</button>
+                        </div>
                       </Modal.Footer>
                     </Modal>
                   </Fragment>
@@ -165,15 +171,19 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu, removed 
                 <Fragment>
                   {curPlayer.isAdmin ? (
                     <Fragment>
-                      <button type="button" class="btn btn-secondary mb-3 btn-sm d-flex align-items-center" onClick={openRandom}><FaRandom/>&nbsp;Teams</button>
+                      <button type="button" class="btn btn-main mb-3 btn-sm d-flex align-items-center" onClick={openRandom}><FaRandom/>&nbsp;Teams</button>
 
-                      <Modal show={showRandom} onHide={closeRandom}>
+                      <Modal show={showRandom} onHide={closeRandom} centered>
                         <Modal.Body>
-                          Are you sure you want to randomize teams?
+                          <div class="d-flex justify-content-center">
+                            <span>Are you sure you want to randomize teams?</span>
+                          </div>
                         </Modal.Body>
                         <Modal.Footer>
-                        <button type="button" class="btn btn-secondary" onClick={closeRandom}>Cancel</button>
-                        <button type="button" class="btn btn-primary" onClick={randomizeTeams}>Randomize</button>
+                          <div class="w-100 d-flex justify-content-center">
+                            <button type="button" class="btn btn-cancel me-2" onClick={closeRandom}>Cancel</button>
+                            <button type="button" class="btn btn-ok" onClick={randomizeTeams}>Randomize</button>
+                          </div>
                         </Modal.Footer>
                       </Modal>
                     </Fragment>
@@ -189,24 +199,28 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu, removed 
 
               <div>
                 {curPlayer.isAdmin ? (
-                  <button type="button" class="btn btn-danger size" onClick={openLeave}>End game</button>
+                  <button type="button" class="btn btn-main2 size" onClick={openLeave}>End game</button>
                 ) : (
-                  <button type="button" class="btn btn-danger size" onClick={openLeave}>Leave game</button>
+                  <button type="button" class="btn btn-main2 size" onClick={openLeave}>Leave game</button>
                 )}
 
-                <Modal show={showLeave} onHide={closeLeave}>
+                <Modal show={showLeave} onHide={closeLeave} centered>
                   <Modal.Body>
-                    {curPlayer.isAdmin ? (
-                      <span>Are you sure you want to end the game?</span>
-                    ) : (
-                      <span>Are you sure you want to leave the game?</span>
-                    )}
+                    <div class="d-flex justify-content-center">
+                      {curPlayer.isAdmin ? (
+                        <span>Are you sure you want to end the game?</span>
+                      ) : (
+                        <span>Are you sure you want to leave the game?</span>
+                      )}
+                    </div>
                   </Modal.Body>
                   <Modal.Footer>
-                    <button type="button" class="btn btn-secondary" onClick={closeLeave}>Cancel</button>
-                    <button type="button" class="btn btn-primary" onClick={curPlayer.isAdmin ? endGame : leaveGame}>
-                      {curPlayer.isAdmin ? "End Game" : "Leave Game"}
-                    </button>
+                    <div class="w-100 d-flex justify-content-center">
+                      <button type="button" class="btn btn-cancel me-2" onClick={closeLeave}>Cancel</button>
+                      <button type="button" class="btn btn-ok" onClick={curPlayer.isAdmin ? endGame : leaveGame}>
+                        {curPlayer.isAdmin ? "End Game" : "Leave Game"}
+                      </button>
+                    </div>
                   </Modal.Footer>
                 </Modal>
               </div>

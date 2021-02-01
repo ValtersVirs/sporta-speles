@@ -164,22 +164,24 @@ export const CreateGame = ({ user, deletePlayer, goToMenu, removed }) => {
             </div>
             {selectedOptions(select)}
             <div class="col-12 mb-3 d-flex justify-content-center p-0">
-              <button type="submit" class="btn btn-primary size">Create Game</button>
+              <button type="submit" class="btn btn-main size">Create Game</button>
 
-              <Modal show={showCreate} onHide={closeCreate}>
+              <Modal show={showCreate} onHide={closeCreate} centered>
                 <Modal.Body>
-                  <span>
-                    Are you sure you want to create a game?
-                  </span>
+                  <div class="d-flex justify-content-center">
+                    <span>Are you sure you want to create a game?</span>
+                  </div>
                 </Modal.Body>
                 <Modal.Footer>
-                  <button type="button" class="btn btn-secondary" onClick={closeCreate}>Cancel</button>
-                  <button type="button" class="btn btn-primary" onClick={handleModal}>Create game</button>
+                  <div class="w-100 d-flex justify-content-center">
+                    <button type="button" class="btn btn-cancel me-2" onClick={closeCreate}>Cancel</button>
+                    <button type="button" class="btn btn-ok" onClick={handleModal}>Create game</button>
+                  </div>
                 </Modal.Footer>
               </Modal>
             </div>
             <div class="col-12 d-flex justify-content-center p-0">
-              <button type="button" class="btn btn-secondary" onClick={goToMenu}>Back</button>
+              <button type="button" class="btn btn-main2" onClick={goToMenu}>Back</button>
             </div>
           </form>
         </div>

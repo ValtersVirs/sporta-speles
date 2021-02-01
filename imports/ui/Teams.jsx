@@ -108,12 +108,16 @@ const Team = ({ teams, team, player, gameId, maxPlayers, isAdmin }) => {
           <div class="d-flex justify-content-center">
             <button type="button" class="btn-transparent btn-focus align-middle p-0" disabled={saveDisabled} onClick={handleClick}><FaRegEdit/></button>
 
-            <Modal show={showNameSet} onHide={closeNameSet}>
+            <Modal show={showNameSet} onHide={closeNameSet} centered>
               <Modal.Body>
-                Teams name set to {teamName}
+                <div class="d-flex justify-content-center">
+                  <span>Teams name set to {teamName}</span>
+                </div>
               </Modal.Body>
               <Modal.Footer>
-                <button type="button" class="btn btn-primary" onClick={closeNameSet}>Ok</button>
+                <div class="w-100 d-flex justify-content-center">
+                  <button type="button" class="btn btn-primary" onClick={closeNameSet}>Ok</button>
+                </div>
               </Modal.Footer>
             </Modal>
           </div>
@@ -123,6 +127,7 @@ const Team = ({ teams, team, player, gameId, maxPlayers, isAdmin }) => {
         <span id="hide" class="fw-bold p-0 m-0" ref={refHidden}>{teamName}</span>
         <input
           class="p-0 m-0 score fw-bold align-middle overflow-hidden d-block"
+          style={{backgroundColor: "#d7dadd"}}
           type="text"
           ref={refInput}
           value={teamName}
@@ -134,8 +139,8 @@ const Team = ({ teams, team, player, gameId, maxPlayers, isAdmin }) => {
         key={teamPlayer}
         player={teamPlayer}
       />) }
-      <button type="button" class="btn btn-primary btn-sm size-100px" onClick={handleJoinClick} style={{display: displayJoin}}>Join team</button>
-      <button type="button" class="btn btn-danger btn-sm size-100px" onClick={handleLeaveClick} style={{display: displayLeave}}>Leave team</button>
+      <button type="button" class="btn btn-main btn-sm size-100px" onClick={handleJoinClick} style={{display: displayJoin}}>Join team</button>
+      <button type="button" class="btn btn-main2 btn-sm size-100px" onClick={handleLeaveClick} style={{display: displayLeave}}>Leave team</button>
     </div>
   );
 };

@@ -204,34 +204,38 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
 
   return (
     <div class="d-flex align-items-center flex-column">
-      <div class="row mb-3">
-        <div class="col-6">
-          <button type="button" class="btn btn-secondary d-flex justify-content-center align-items-center" onClick={prevRound}><FaArrowLeft/></button>
+      <div class="row mb-3 size">
+        <div class="col-6 d-flex justify-content-start p-0">
+          <button type="button" class="btn btn-main d-flex justify-content-center align-items-center" onClick={prevRound}><FaArrowLeft/></button>
         </div>
-        <div class="col-6">
-          <button type="button" class="btn btn-secondary d-flex justify-content-center align-items-center" onClick={nextRound}><FaArrowRight/></button>
+        <div class="col-6 d-flex justify-content-end p-0">
+          <button type="button" class="btn btn-main d-flex justify-content-center align-items-center" onClick={nextRound}><FaArrowRight/></button>
         </div>
       </div>
       <div class="size">{tournament[round]}</div>
       {isAdmin ? (
-        <button type="button" class="btn btn-danger size" onClick={openLeave}>End game</button>
+        <button type="button" class="btn btn-main size mt-4" onClick={openLeave}>End game</button>
       ) : (
-        <button type="button" class="btn btn-danger size" onClick={openLeave}>Leave game</button>
+        <button type="button" class="btn btn-main size mt-4" onClick={openLeave}>Leave game</button>
       )}
 
-      <Modal show={showLeave} onHide={closeLeave}>
+      <Modal show={showLeave} onHide={closeLeave} centered>
         <Modal.Body>
-          {isAdmin ? (
-            <span>Are you sure you want to end the game?</span>
-          ) : (
-            <span>Are you sure you want to leave the game?<br/>You will not be able to join back.</span>
-          )}
+          <div class="d-flex justify-content-center">
+            {isAdmin ? (
+              <span>Are you sure you want to end the game?</span>
+            ) : (
+              <span>Are you sure you want to leave the game?<br/>You will not be able to join back.</span>
+            )}
+          </div>
         </Modal.Body>
         <Modal.Footer>
-          <button type="button" class="btn btn-secondary" onClick={closeLeave}>Cancel</button>
-          <button type="button" class="btn btn-primary" onClick={isAdmin ? endGame : leaveGame}>
-            {isAdmin ? "End Game" : "Leave Game"}
-          </button>
+          <div class="w-100 d-flex justify-content-center">
+            <button type="button" class="btn btn-cancel me-2" onClick={closeLeave}>Cancel</button>
+            <button type="button" class="btn btn-ok" onClick={isAdmin ? endGame : leaveGame}>
+              {isAdmin ? "End Game" : "Leave Game"}
+            </button>
+          </div>
         </Modal.Footer>
       </Modal>
     </div>

@@ -64,8 +64,8 @@ export const Register = ({ goToMenu, goToLogin }) => {
           ) : ""}
         </Fragment>
       )}
-      <button type="submit" class="btn btn-primary size my-3">Create an account</button>
-      <button type="button" class="btn btn-secondary size" onClick={goToLogin}>Back</button>
+      <button type="submit" class="btn btn-main size my-3">Create an account</button>
+      <button type="button" class="btn btn-main2 size" onClick={goToLogin}>Back</button>
     </form>
   );
 

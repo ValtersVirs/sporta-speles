@@ -57,8 +57,8 @@ export const Login = ({ goToMenu }) => {
           {error ? (
             <span class="text-danger text-center size">Invalid username or password</span>
           ) : ""}
-          <button type="submit" class="btn btn-primary size my-3">Sign In</button>
-          <button type="button" class="btn btn-secondary size"  onClick={() => setRegister(true)}>Register</button>
+          <button type="submit" class="btn btn-main size my-3">Sign In</button>
+          <button type="button" class="btn btn-main2 size"  onClick={() => setRegister(true)}>Register</button>
         </form>
       )}
     </Fragment>

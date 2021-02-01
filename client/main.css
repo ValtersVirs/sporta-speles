@@ -1,6 +1,131 @@
+html, body, #react-target {
+  height: 100%;
+}
+
+.min-100 {
+  min-height: 100%;
+}
+
+hr {
+  color: white !important;
+  background-color: white !important;
+  height: 1px !important;
+  width: 150px !important;
+  opacity: 1 !important;
+}
+
+::selection {
+  background: #fc4c3d;
+}
+
+table {
+  border-color: white !important;
+  width: 200px;
+  max-width: 300px;
+}
+
+button:focus {
+  box-shadow: none !important;
+}
+
+input:focus {
+ box-shadow: 0 0 0 0.2rem rgba(252, 76, 61, 0.25) !important;
+ border-color: rgba(252, 76, 61, 0.25) !important;
+}
+
+input[type=text] {
+
+}
+
+input[type=checkbox]:focus {
+   border-color: #ced4da !important;
+   box-shadow: none !important;
+}
+
+input[type=checkbox]:checked {
+  background-color: #fc4c3d !important;
+  border-color: #fc4c3d !important;
+}
+
+select:focus {
+  border-color: #ced4da !important;
+  box-shadow: none !important;
+}
+
+.btn-main.btn-main {
+  background-color: #4e6575;
+  color: white;
+}
+
+.btn-main.btn-main:hover {
+  background-color: #fc4c3d;
+  color: white;
+  transform:scale(1.03, 1.03);
+}
+
+.btn-main2.btn-main2 {
+  background-color: #fc4c3d;
+  color: white;
+}
+
+.btn-main2.btn-main2:hover {
+  background-color: #4e6575;
+  color: white;
+  transform:scale(1.03, 1.03);
+}
+
+.btn-nav.btn-nav {
+  background-color: #fc4c3d;
+  border: 2px solid white;
+  color: white;
+}
+
+.btn-nav.btn-nav:hover {
+  background-color: white;
+  color: #fc4c3d;
+  transform:scale(1.05, 1.05);
+}
+
+.btn-ok.btn-ok {
+  background-color: #fc4c3d;
+  color: white;
+  transition: 0.2s
+}
+
+.btn-ok.btn-ok:hover {
+  background-color: #fb1e0b;
+  color: white;
+}
+
+.btn-cancel.btn-cancel {
+  background-color: #4e6575;
+  color: white;
+  transition: 0.2s
+}
+
+.btn-cancel.btn-cancel:hover {
+  background-color: #3e515d;
+  color: white;
+}
+
+.btn-circle {
+  border-radius: 50% !important;
+}
+
+.bg-nav {
+  background-color: #fc4c3d;
+}
+
+.bg-main {
+  background-color: #d7dadd
+}
+
+.navbar-text-main {
+  color: white;
+}
+
 .navbar-custom {
-  height: 55px;
-  margin-bottom: 20px;
+  height: 60px;
 }
 
 .size {
@@ -18,6 +143,11 @@
 .box-25px {
   height: 25px;
   width: 25px;
+}
+
+.box-32px {
+  height: 32px;
+  width: 32px;
 }
 
 .btn-transparent {
@@ -153,6 +283,7 @@
 
 .score:focus {
   outline: none;
+  box-shadow: none !important;
 }
 
 #hide {

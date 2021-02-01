@@ -3,6 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import { Modal } from 'react-bootstrap';
 import { PlayersCollection } from '/imports/api/PlayersCollection';
 import { GamesCollection } from '/imports/api/GamesCollection';
+import { FaTimes, FaRegEdit } from 'react-icons/fa';
 
 export const Leaderboard = ({ gameId, name, isAdmin, endGame, goToMenu }) => {
   const [disqualified, setDisqualified] = useState(false)
@@ -20,33 +21,34 @@ export const Leaderboard = ({ gameId, name, isAdmin, endGame, goToMenu }) => {
   return (
     <div class="d-flex align-items-center flex-column">
       <div>
-        Leaderboard
-      </div>
-      <div>
         <LeaderboardPlayers
           gameId={gameId}
           isAdmin={isAdmin}
         />
       </div>
       {isAdmin ? (
-        <button type="button" class="btn btn-danger" onClick={openLeave}>End game</button>
+        <button type="button" class="btn btn-main" onClick={openLeave}>End game</button>
       ) : (
-        <button type="button" class="btn btn-danger" onClick={openLeave}>Leave game</button>
+        <button type="button" class="btn btn-main" onClick={openLeave}>Leave game</button>
       )}
 
-      <Modal show={showLeave} onHide={closeLeave}>
+      <Modal show={showLeave} onHide={closeLeave} centered>
         <Modal.Body>
-          {isAdmin ? (
-            <span>Are you sure you want to end the game?</span>
-          ) : (
-            <span>Are you sure you want to leave the game?<br/>You will not be able to join back.</span>
-          )}
+          <div class="d-flex justify-content-center">
+            {isAdmin ? (
+              <span>Are you sure you want to end the game?</span>
+            ) : (
+              <span>Are you sure you want to leave the game?<br/>You will not be able to join back.</span>
+            )}
+          </div>
         </Modal.Body>
         <Modal.Footer>
-          <button type="button" class="btn btn-secondary" onClick={closeLeave}>Cancel</button>
-          <button type="button" class="btn btn-primary" onClick={isAdmin ? endGame : leaveGame}>
-            {isAdmin ? "End Game" : "Leave Game"}
-          </button>
+          <div class="w-100 d-flex justify-content-center">
+            <button type="button" class="btn btn-cancel me-2" onClick={closeLeave}>Cancel</button>
+            <button type="button" class="btn btn-ok" onClick={isAdmin ? endGame : leaveGame}>
+              {isAdmin ? "End Game" : "Leave Game"}
+            </button>
+          </div>
         </Modal.Footer>
       </Modal>
     </div>
@@ -70,7 +72,7 @@ const LeaderboardPlayers = ({ gameId, isAdmin }) => {
     const noScore = PlayersCollection.find({ gameId: gameId, points: {
       $type: "string"
     } }, {
-      sort: { _id: 1 }
+      sort: { points: 1, _id: 1 }
     }).fetch()
 
     var players = [...hasScore, ...noScore]
@@ -103,6 +105,8 @@ const LeaderboardPlayers = ({ gameId, isAdmin }) => {
 
 const LeaderboardPlayer = ({ player, isAdmin, scoreType, placeTemp }) => {
   const [score, setScore] = useState(player.points);
+  const [disabled, setDisabled] = useState(true);
+  const [showDisqualify, setShowDisqualify] = useState(false);
 
   const addPoints = () => {
     Meteor.call('addPoints', player);
@@ -120,9 +124,6 @@ const LeaderboardPlayer = ({ player, isAdmin, scoreType, placeTemp }) => {
         const mm = Number(score.match(/(?:.*?[0-9]+){0}.*?([0-9]+)/s)[1])
         const ss = Number(score.match(/(?:.*?[0-9]+){1}.*?([0-9]+)/s)[1])
         const ms = Number(score.match(/(?:.*?[0-9]+){2}.*?([0-9]+)/s)[1])
-        console.log(`minutes = ${mm}`);
-        console.log(`seconds = ${ss}`);
-        console.log(`milliseconds = ${ms}`);
 
         const convertedScore = ms + ss * 100 + mm * 100 * 60
 
@@ -134,6 +135,29 @@ const LeaderboardPlayer = ({ player, isAdmin, scoreType, placeTemp }) => {
       Meteor.call('updateScore', player, score);
     }
   }
+
+  useEffect(() => {
+    if (scoreType === "Time") {
+      const convertScore = () => {
+        if (/[0-5][0-9]:[0-5][0-9]\.[0-9]{2}/.test(score)) {
+          const mm = Number(score.match(/(?:.*?[0-9]+){0}.*?([0-9]+)/s)[1])
+          const ss = Number(score.match(/(?:.*?[0-9]+){1}.*?([0-9]+)/s)[1])
+          const ms = Number(score.match(/(?:.*?[0-9]+){2}.*?([0-9]+)/s)[1])
+
+          return ms + ss * 100 + mm * 100 * 60
+        } else {
+          return
+        }
+      }
+
+      if (!(/[0-5][0-9]:[0-5][0-9]\.[0-9]{2}/.test(score))) setDisabled(true)
+      else if (convertScore() === player.points) setDisabled(true)
+      else setDisabled(false)
+    } else {
+      if (score === player.points) setDisabled(true)
+      else setDisabled(false)
+    }
+  }, [score, player.points])
 
   useEffect(() => {
     if (scoreType === "Time") {
@@ -201,30 +225,52 @@ const LeaderboardPlayer = ({ player, isAdmin, scoreType, placeTemp }) => {
 
   const placeholder = scoreType === "Time" ? "mm:ss.ms" : "points"
 
+  const openDisqualify = () => setShowDisqualify(true)
+  const closeDisqualify = () => setShowDisqualify(false)
+
   return (
     <Fragment>
       <tr>
         <th scope="row" class="align-middle">{place}</th>
-        <td class="align-middle">{player.name}</td>
+        <td class="align-middle text-break">{player.name}</td>
         <td>
+          <div class="d-flex">
           {isAdmin ? (
             <Fragment>
               <input
                 className="score"
+                style={{backgroundColor: "#d7dadd"}}
                 type="text"
                 size="8"
                 placeholder={placeholder}
                 value={score}
                 onChange={onScoreChange}
               />
-              <button type="button" class="btn btn-primary btn-sm me-1" onClick={saveScore}>Save</button>
-              <button type="button" class="btn btn-danger btn-sm" onClick={disqualify}>&times;</button>
+              <button type="button" class="btn btn-main btn-sm me-1 d-flex justify-content-center align-items-center box-32px" disabled={disabled} onClick={saveScore}><FaRegEdit/></button>
+              <button type="button" class="btn btn-main2 btn-sm d-flex justify-content-center align-items-center box-32px" onClick={openDisqualify}>
+                <FaTimes/>
+              </button>
+
+              <Modal show={showDisqualify} onHide={closeDisqualify} centered>
+                <Modal.Body>
+                  <div class="d-flex justify-content-center">
+                    <span>Are you sure you want to disqualify the player</span>
+                  </div>
+                </Modal.Body>
+                <Modal.Footer>
+                  <div class="w-100 d-flex justify-content-center">
+                    <button type="button" class="btn btn-cancel me-2" onClick={closeDisqualify}>Cancel</button>
+                    <button type="button" class="btn btn-ok" onClick={disqualify}>disqualify</button>
+                  </div>
+                </Modal.Footer>
+              </Modal>
             </Fragment>
           ) : (
             <Fragment>
               {points}
             </Fragment>
           )}
+          </div>
         </td>
       </tr>
     </Fragment>

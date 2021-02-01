@@ -89,6 +89,7 @@ export const Round = ({ participants, roundNr, gameId, gameType, collection, isA
         gameId={gameId}
         collection={collection}
         matchNr={i}
+        maxMatches={(participants.length - a) / 2}
         roundNr={roundNr}
         participants={matchParticipants}
         isAdmin={isAdmin}
@@ -179,7 +180,7 @@ const RankingPlayer = ({ participant, place, gameId }) => {
             <td class="p-0" style={{borderBottom: "none"}} ref={refRow} colSpan="3">
               <Collapse
                 in={open}
-                onEnter={() => refRow.current.style.borderBottom = "1px solid #dee2e6"}
+                onEnter={() => refRow.current.style.borderBottom = "1px solid white"}
                 onExited={() => refRow.current.style.borderBottom = "none"}
               >
                 <div id={`collapse${place}`}>
