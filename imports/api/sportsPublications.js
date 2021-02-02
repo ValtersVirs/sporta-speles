@@ -14,3 +14,7 @@ Meteor.publish('allGames', function() {
 Meteor.publish('allTeams', function() {
   return TeamsCollection.find({})
 });
+
+Meteor.publish("allUsers", function () {
+  return Meteor.users.find({});
+});

@@ -1,29 +1,86 @@
 import React, { useState, useEffect } from 'react';
+import { Meteor } from 'meteor/meteor';
 import { Modal } from 'react-bootstrap';
 import { FaTrash } from 'react-icons/fa';
+
+import { TeamsCollection } from '/imports/api/TeamsCollection';
 
 export const Settings = ({ user, goToMenu }) => {
   const [showDelete, setShowDelete] = useState(false)
   const [confirm, setConfirm] = useState('')
-  const [disabled, setDisabled] = useState(true)
+  const [disabledDelete, setDisabledDelete] = useState(true)
+  const [showName, setShowName] = useState(false)
+  const [name, setName] = useState('')
+  const [disabledName, setDisabledName] = useState(true)
 
   useEffect(() => {
-    if (confirm === user.username) setDisabled(false)
-    else setDisabled(true)
+    Meteor.subscribe('allUsers');
+  }, [])
+
+  const users = Meteor.users.find({}, { fields: { username: 1 } }).fetch()
+
+  const usernames = users.map(user => {
+    return user.username
+  })
+
+  useEffect(() => {
+    if (confirm === user.username) setDisabledDelete(false)
+    else setDisabledDelete(true)
   }, [confirm])
+
+  useEffect(() => {
+    if (usernames.includes(name) || name === "") setDisabledName(true)
+    else setDisabledName(false)
+  }, [name])
 
   const deleteUser = () => {
     closeDelete()
     Meteor.call('removeUser');
   }
 
+  const changeName = () => {
+    closeName()
+    Meteor.call('updateName', user.username, name)
+  }
+
   const openDelete = () => setShowDelete(true)
   const closeDelete = () => setShowDelete(false)
+
+  const openName = () => setShowName(true)
+  const closeName = () => setShowName(false)
 
   return (
     <div class="d-flex flex-column align-items-center">
       <span class="h4 mb-3">Account name: {user.username}</span>
-      <button type="button" class="btn btn-main mb-3 d-flex align-items-center" onClick={openDelete}>
+      <button type="button" class="btn btn-main mb-3 d-flex align-items-center justify-content-center size" onClick={openName}>Change name</button>
+
+      <Modal show={showName} onHide={closeName} centered>
+        <Modal.Body>
+          <div class="d-flex flex-column align-items-center">
+            <span class="mb-2">Type your new name</span>
+            <div>
+              <input
+                type="text"
+                class="form-control"
+                name="username"
+                required
+                onChange={e => setName(e.target.value)}
+              />
+            </div>
+            {disabledName && name !== "" ? (
+              <span class="text-danger text-center size">Name unavailable</span>
+            ) : ""}
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <div class="w-100 d-flex justify-content-center">
+            <button type="button" class="btn btn-cancel me-2" onClick={closeName}>Cancel</button>
+            <button type="button" class="btn btn-ok" disabled={disabledName} onClick={changeName}>Change</button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+
+      <button type="button" class="btn btn-main mb-3 d-flex align-items-center justify-content-center size" onClick={openDelete}>
         <FaTrash/>
         <span class="ms-1">Delete account</span>
       </button>
@@ -48,7 +105,7 @@ export const Settings = ({ user, goToMenu }) => {
         <Modal.Footer>
           <div class="w-100 d-flex justify-content-center">
             <button type="button" class="btn btn-cancel me-2" onClick={closeDelete}>Cancel</button>
-            <button type="button" class="btn btn-ok" disabled={disabled} onClick={deleteUser}>Delete</button>
+            <button type="button" class="btn btn-ok" disabled={disabledDelete} onClick={deleteUser}>Delete</button>
           </div>
         </Modal.Footer>
       </Modal>

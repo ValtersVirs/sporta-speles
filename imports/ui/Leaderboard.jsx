@@ -218,9 +218,8 @@ const LeaderboardPlayer = ({ player, isAdmin, scoreType, placeTemp }) => {
   }
 
   const disqualify = () => {
-    Meteor.call('disqualify', player.name, (err, res) => {
-
-    })
+    closeDisqualify()
+    Meteor.call('disqualify', player.name)
   }
 
   const placeholder = scoreType === "Time" ? "mm:ss.ms" : "points"
@@ -260,7 +259,7 @@ const LeaderboardPlayer = ({ player, isAdmin, scoreType, placeTemp }) => {
                 <Modal.Footer>
                   <div class="w-100 d-flex justify-content-center">
                     <button type="button" class="btn btn-cancel me-2" onClick={closeDisqualify}>Cancel</button>
-                    <button type="button" class="btn btn-ok" onClick={disqualify}>disqualify</button>
+                    <button type="button" class="btn btn-ok" onClick={disqualify}>Disqualify</button>
                   </div>
                 </Modal.Footer>
               </Modal>

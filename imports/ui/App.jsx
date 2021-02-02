@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { PlayersCollection } from '/imports/api/PlayersCollection';
@@ -24,9 +24,11 @@ export const App = () => {
   const [showRemoved, setShowRemoved] = useState(false)
   const [settings, setSettings] = useState(false)
 
-  Meteor.subscribe('allPlayers');
-  Meteor.subscribe('allGames');
-  Meteor.subscribe('allTeams');
+  useEffect(() => {
+    Meteor.subscribe('allPlayers');
+    Meteor.subscribe('allGames');
+    Meteor.subscribe('allTeams');
+  }, [])
 
   const user = useTracker(() => Meteor.user());
 
@@ -71,6 +73,8 @@ export const App = () => {
   const openSettings = () => {
     setSettings(true);
     setShowButtons(false);
+    setJoin(false);
+    setCreate(false);
   }
 
   const openCreate = () => setShowCreate(true)

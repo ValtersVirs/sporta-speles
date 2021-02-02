@@ -1,6 +1,7 @@
 import { PlayersCollection } from './PlayersCollection';
 import { GamesCollection } from './GamesCollection';
 import { TeamsCollection } from './TeamsCollection';
+import { Meteor } from 'meteor/meteor';
 
 Meteor.methods({
   'playerInsert'(name, gameId, isAdmin) {
@@ -222,5 +223,20 @@ Meteor.methods({
       }
       if (playerCount === GamesCollection.findOne({ gameId: gameId }).teamSize) break
     }
+  },
+  'updateName'(oldName, newName) {
+    Meteor.users.update({ username: oldName }, {
+      $set: { username: newName }
+    })
+
+    PlayersCollection.update({ name: oldName }, {
+      $set: { name: newName }
+    })
+
+    TeamsCollection.update({ players: oldName }, {
+      $set: { "players.$[element]": newName }
+    }, {
+      arrayFilters: [ { element: oldName } ]
+    })
   },
 })
