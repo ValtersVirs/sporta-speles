@@ -42,10 +42,6 @@ export const Round = ({ participants, roundNr, gameId, gameType, collection, isA
   if (participants.length % 2) a = 1;
 
   if (participants.length === 1) {
-    const winnerCount = collection.find({ gameId: gameId, winner: true }).count()
-
-    if (winnerCount === 0) Meteor.call('setWinner', gameId, gameType, participants[0].name)
-
     return (
       <Ranking
         collection={collection}
@@ -100,7 +96,7 @@ export const Round = ({ participants, roundNr, gameId, gameType, collection, isA
     }
 
     return (
-      <div class="d-flex align-items-center flex-column">
+      <div class="d-flex align-items-center flex-column size">
         <p class="h4">Round {roundNr}</p>
         <div class="d-flex align-items-center flex-column w-100">{round}</div>
       </div>
@@ -130,29 +126,32 @@ const Participant = ({ participant, playerNr, matchNr, openTeam, gameType }) => 
 
 const Ranking = ({ collection, gameId }) => {
   const participants = collection.find({ gameId }, {
-    sort: { winner: -1, points: -1, _id: 1 }
+    sort: { points: -1, wins: -1, winner: -1, _id: 1 }
   })
 
   return (
     <div class="d-flex align-items-center flex-column mb-3">
       <p class="h4">Leaderboard</p>
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col" style={{width: 35}}>#</th>
-            <th scope="col">Name</th>
-            <th scope="col" style={{width: 70}}>Points</th>
-          </tr>
-        </thead>
-        <tbody>
-          { participants.map((p, index) => <RankingPlayer
-            key={p._id}
-            participant={p}
-            place={index + 1}
-            gameId={gameId}
-          />) }
-        </tbody>
-      </table>
+      <div style={{minWidth: 200, maxWidth: 300}}>
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col" style={{maxWidth: 100}}>Name</th>
+              <th scope="col">Points</th>
+              <th scope="col">Wins</th>
+            </tr>
+          </thead>
+          <tbody>
+            { participants.map((p, index) => <RankingPlayer
+              key={p._id}
+              participant={p}
+              place={index + 1}
+              gameId={gameId}
+            />) }
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -175,9 +174,10 @@ const RankingPlayer = ({ participant, place, gameId }) => {
             <th scope="row">{place}</th>
             <td scope="row" class="text-break">{participant.name}</td>
             <td scope="row">{participant.points}</td>
+            <td scope="row">{participant.wins}</td>
           </tr>
           <tr>
-            <td class="p-0" style={{borderBottom: "none"}} ref={refRow} colSpan="3">
+            <td class="p-0" style={{borderBottom: "none"}} ref={refRow} colSpan="4">
               <Collapse
                 in={open}
                 onEnter={() => refRow.current.style.borderBottom = "1px solid white"}
@@ -200,6 +200,7 @@ const RankingPlayer = ({ participant, place, gameId }) => {
           <th scope="row">{place}</th>
           <td scope="row">{participant.name}</td>
           <td scope="row">{participant.points}</td>
+          <td scope="row">{participant.wins}</td>
         </tr>
       )}
     </Fragment>

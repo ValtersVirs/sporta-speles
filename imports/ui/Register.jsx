@@ -22,6 +22,10 @@ export const Register = ({ goToMenu, goToLogin }) => {
     Accounts.createUser({
       username: username,
       password: password,
+      profile: {
+        wins: 0,
+        games: 0,
+      }
     }, (err) => {
       if (err) {
         setLength(false)

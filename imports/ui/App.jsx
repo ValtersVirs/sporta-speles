@@ -105,7 +105,7 @@ export const App = () => {
         </div>
       </nav>
       <div class="row flex-grow-1 bg-main d-flex flex-column" style={{paddingTop: 100, paddingBottom: 100, marginTop: 110, marginBottom: 50}}>
-        <div>
+        <div class="px-4">
         {user ? (
           <Fragment>
             {showButtons ? (

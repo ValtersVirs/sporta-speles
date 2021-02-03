@@ -51,7 +51,12 @@ export const Settings = ({ user, goToMenu }) => {
 
   return (
     <div class="d-flex flex-column align-items-center">
-      <span class="h4 mb-3">Account name: {user.username}</span>
+      <span class="h4 m-0">Account name: {user.username}</span>
+      <hr />
+      <span class="h5">Stats</span>
+      <span>Tournamet games: {user.profile.games}</span>
+      <span>Tournamet wins: {user.profile.wins}</span>
+      <hr />
       <button type="button" class="btn btn-main mb-3 d-flex align-items-center justify-content-center size" onClick={openName}>Change name</button>
 
       <Modal show={showName} onHide={closeName} centered>

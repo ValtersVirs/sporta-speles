@@ -116,7 +116,7 @@ const Team = ({ teams, team, player, gameId, maxPlayers, isAdmin }) => {
               </Modal.Body>
               <Modal.Footer>
                 <div class="w-100 d-flex justify-content-center">
-                  <button type="button" class="btn btn-primary" onClick={closeNameSet}>Ok</button>
+                  <button type="button" class="btn btn-ok" onClick={closeNameSet}>Ok</button>
                 </div>
               </Modal.Footer>
             </Modal>

@@ -104,7 +104,7 @@ export const Match = ({ match, gameId, collection, matchNr, maxMatches, roundNr,
 
   return (
     <div class="w-100 d-flex flex-column align-items-center">
-      <div class="row">
+      <div class="row w-100">
         {match}
       </div>
       {isDisabled ? (
@@ -170,11 +170,13 @@ export const Match = ({ match, gameId, collection, matchNr, maxMatches, roundNr,
 
       <Modal show={show} onHide={closeModal} centered>
         <Modal.Header>
-          <Modal.Title>
-            <div class="w-100 d-flex justify-content-center">
+          <div class="h5 w-100 d-flex justify-content-center">
+            {gameType === "Team" ? (
               <span>Set score for teams</span>
-            </div>
-          </Modal.Title>
+            ) : (
+              <span>Set score for players</span>
+            )}
+          </div>
         </Modal.Header>
         <Modal.Body>
           <div class="row">

@@ -82,14 +82,24 @@ Meteor.methods({
       gameId: gameId,
       round: { $exists: false }
     }, {
-      $set: { round: 1, status: "playing", points: 0, winner: false }
+      $set: { round: 1, status: "playing", points: 0, wins: 0, winner: false }
     }, { multi: true })
+
+
+    PlayersCollection.find({ gameId: gameId }, {
+      fields: { name: 1 }
+    }).fetch().forEach(player => {
+      Meteor.users.update({ username: player.name }, {
+        $inc: { "profile.games": 1 }
+      })
+    })
+
   },
   'matchCompleted'(winner, loser, winnerScore, loserScore, gameId, gameType, points) {
     const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
 
     collection.update({ name: winner, gameId: gameId }, {
-      $inc: { round: 1, points: points }
+      $inc: { round: 1, points: points, wins: 1 }
     }),
     collection.update({ name: loser, gameId: gameId }, {
       $set: { status: "lost", winnerScore: winnerScore, loserScore: loserScore }
@@ -159,6 +169,18 @@ Meteor.methods({
     collection.update({ gameId: gameId, name: name }, {
       $set: { winner: true }
     })
+
+    if (gameType === "Team") {
+      TeamsCollection.findOne({ gameId: gameId, name: "Team 1" }).players.forEach(player => {
+        Meteor.users.update({ username: player }, {
+          $inc: { "profile.wins": 1 }
+        })
+      })
+    } else {
+      Meteor.users.update({ username: name }, {
+        $inc: { "profile.wins": 1 }
+      })
+    }
   },
   'leaveGame'(player) {
     TeamsCollection.update({ gameId: player.gameId }, {

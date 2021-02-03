@@ -191,6 +191,10 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
   if (roundList[roundList.length - 1].length === 1 && temp.current === false) {
     temp.current = true
     setWinner(true)
+    
+    if (collection.find({ gameId: gameId, winner: true }).count() === 0) {
+      Meteor.call('setWinner', gameId, gameType, roundList[roundList.length - 1][0].name)
+    }
   }
 
   const leaveGame = () => {
@@ -212,7 +216,7 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
           <button type="button" class="btn btn-main d-flex justify-content-center align-items-center" onClick={nextRound}><FaArrowRight/></button>
         </div>
       </div>
-      <div class="size">{tournament[round]}</div>
+      {tournament[round]}
       {isAdmin ? (
         <button type="button" class="btn btn-main size mt-4" onClick={openLeave}>End game</button>
       ) : (

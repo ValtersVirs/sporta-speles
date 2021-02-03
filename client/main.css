@@ -21,7 +21,7 @@ hr {
 table {
   border-color: white !important;
   width: 200px;
-  max-width: 300px;
+  max-width: 100vw;
 }
 
 button:focus {
