@@ -12,10 +12,13 @@ export const Login = ({ goToMenu }) => {
     e.preventDefault();
 
     Meteor.loginWithPassword(username, password, (err) => {
-      if (err) setError(true)
+      if (err) {
+        alert(err)
+        setError(true)
+      } else {
+        goToMenu();
+      }
     });
-
-    goToMenu();
   };
 
   const goToLogin = () => {
