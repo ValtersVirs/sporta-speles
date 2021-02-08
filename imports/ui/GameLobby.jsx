@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Modal } from 'react-bootstrap';
@@ -10,12 +10,14 @@ import { Admin } from './Admin'
 import { Tournament } from './Tournament';
 import { Leaderboard } from './Leaderboard';
 import { Teams } from './Teams'
-import { FaRandom, FaTimes, FaCheck } from 'react-icons/fa';
+import { FaRandom, FaTimes, FaCheck, FaPlus } from 'react-icons/fa';
 
-export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu, removed }) => {
+export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu, removedGame, removedPlayer }) => {
   const [showStartGame, setShowStartGame] = useState(false)
   const [showLeave, setShowLeave] = useState(false)
   const [showRandom, setShowRandom] = useState(false)
+  const [showAddTeam, setShowAddTeam] = useState(false)
+  const [playerAdd, setPlayerAdd] = useState("")
 
   const game = useTracker( () => GamesCollection.findOne( { gameId: gameId } ));
   const curGameTeams = useTracker( () => TeamsCollection.find({ gameId: gameId }, {
@@ -25,6 +27,20 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu, removed 
   const curGamePlayers = useTracker( () => PlayersCollection.find({ gameId: gameId }, {
     sort: { createdAt: 1 }
   }).fetch());
+
+  if (!game) {
+    return (
+      <div>
+        {removedGame()}
+      </div>
+    )
+  } else if (!curPlayer) {
+    return (
+      <div>
+        {removedPlayer()}
+      </div>
+    )
+  }
 
   const tournamentParticipants = (game.gameType === "Team" ? (
     curGameTeams
@@ -90,148 +106,221 @@ export const GameLobby = ({ playerName, gameId, deletePlayer, goToMenu, removed 
   const openRandom = () => setShowRandom(true)
   const closeRandom = () => setShowRandom(false)
 
+  const openAddTeam = () => setShowAddTeam(true)
+  const closeAddTeam = () => setShowAddTeam(false)
+
+  const addPlayer = player => {
+    setPlayerAdd(player)
+    openAddTeam()
+  }
+
   return (
     <div>
-      {curPlayer ? (
+      {game.gameStart ? (
         <Fragment>
-          {game.gameStart ? (
-            <Fragment>
-              {game.gameType === "Leaderboard" ? (
-                <Leaderboard
-                  gameId={gameId}
-                  name={curPlayer.name}
-                  isAdmin={curPlayer.isAdmin}
-                  endGame={endGame}
-                  goToMenu={goToMenu}
-                />
-              ) : (
-                <Tournament
-                  part={tournamentParticipants}
-                  gameId={game.gameId}
-                  gameType={game.gameType}
-                  endGame={endGame}
-                  goToMenu={goToMenu}
-                  name={curPlayer.name}
-                  isAdmin={curPlayer.isAdmin}
-                />
-              )}
-            </Fragment>
+          {game.gameType === "Leaderboard" ? (
+            <Leaderboard
+              gameId={gameId}
+              name={curPlayer.name}
+              isAdmin={curPlayer.isAdmin}
+              endGame={endGame}
+              goToMenu={goToMenu}
+            />
           ) : (
-            <div class="d-flex align-items-center flex-column">
-              <div class="d-flex align-items-center flex-column mb-3">
-                <p class="h1">{game.gameId}</p>
-                <hr class="m-0" />
-                <p class="mb-0 mt-2">{gameType}</p>
-                <p class="d-flex mb-2">Overtime {game.isOvertime ?
-                  <span class="badge bg-success d-flex justify-content-center align-items-center box-25px ms-1 p-0"><FaCheck/></span> :
-                  <span class="badge bg-danger d-flex justify-content-center align-items-center box-25px ms-1 p-0"><FaTimes/></span>}
-                </p>
-                <hr class="m-0 mb-2" />
-                {curPlayer.isAdmin ? (
-                  <Fragment>
-                    <p class="mb-1">Players in lobby <span class="badge bg-secondary">{curGamePlayers.length}</span></p>
-                    <div>
-                      { curGamePlayers.map(player => <Admin
-                        key={ player._id }
-                        player={ player }
-                        onDeleteClick={ deletePlayer }
-                      />) }
-                    </div>
+            <Tournament
+              part={tournamentParticipants}
+              gameId={game.gameId}
+              gameType={game.gameType}
+              endGame={endGame}
+              goToMenu={goToMenu}
+              name={curPlayer.name}
+              isAdmin={curPlayer.isAdmin}
+            />
+          )}
+        </Fragment>
+      ) : (
+        <div class="d-flex align-items-center flex-column">
+          <div class="d-flex align-items-center flex-column mb-3">
+            <p class="h1">{game.gameId}</p>
+            <hr class="m-0" />
+            <p class="mb-0 mt-2">{gameType}</p>
+            <p class="d-flex mb-2">Overtime {game.isOvertime ?
+              <span class="badge bg-success d-flex justify-content-center align-items-center box-25px ms-1 p-0"><FaCheck/></span> :
+              <span class="badge bg-danger d-flex justify-content-center align-items-center box-25px ms-1 p-0"><FaTimes/></span>}
+            </p>
+            <hr class="m-0 mb-2" />
+            {curPlayer.isAdmin ? (
+              <Fragment>
+                <p class="mb-1">Players in lobby <span class="badge bg-secondary">{curGamePlayers.length}</span></p>
+                <div>
+                  { curGamePlayers.map(player => <Admin
+                    key={player._id}
+                    player={player}
+                    onDeleteClick={deletePlayer}
+                    addPlayer={addPlayer}
+                    gameType={game.gameType}
+                  />) }
+                </div>
 
-                    <button type="button" class="btn btn-main size" onClick={openStartGame}>Start game</button>
-
-                    <Modal show={showStartGame} onHide={closeStartGame} centered>
-                      <Modal.Body>
-                        <div class="d-flex justify-content-center">
-                          <span>Are you sure you want to start the game?</span>
-                        </div>
-                      </Modal.Body>
-                      <Modal.Footer>
-                        <div class="w-100 d-flex justify-content-center">
-                          <button type="button" class="btn btn-cancel me-2" onClick={closeStartGame}>Cancel</button>
-                          <button type="button" class="btn btn-ok" onClick={gameStart}>Start game</button>
-                        </div>
-                      </Modal.Footer>
-                    </Modal>
-                  </Fragment>
-                ) : (
-                  <Fragment>
-                    <p class="mb-2">Players in lobby <span class="badge bg-secondary">{curGamePlayers.length}</span></p>
-                    <div>
-                      { curGamePlayers.map(player => <Player
-                        key={ player._id }
-                        player={ player }
-                      />) }
-                    </div>
-                  </Fragment>
-                )}
-              </div>
-
-              {game.gameType === "Team" ? (
-                <Fragment>
-                  {curPlayer.isAdmin ? (
-                    <Fragment>
-                      <button type="button" class="btn btn-main mb-3 btn-sm d-flex align-items-center" onClick={openRandom}><FaRandom/>&nbsp;Teams</button>
-
-                      <Modal show={showRandom} onHide={closeRandom} centered>
-                        <Modal.Body>
-                          <div class="d-flex justify-content-center">
-                            <span>Are you sure you want to randomize teams?</span>
-                          </div>
-                        </Modal.Body>
-                        <Modal.Footer>
-                          <div class="w-100 d-flex justify-content-center">
-                            <button type="button" class="btn btn-cancel me-2" onClick={closeRandom}>Cancel</button>
-                            <button type="button" class="btn btn-ok" onClick={randomizeTeams}>Randomize</button>
-                          </div>
-                        </Modal.Footer>
-                      </Modal>
-                    </Fragment>
-                  ) : ""}
-                  <Teams
-                    gameId={game.gameId}
-                    player={curPlayer}
-                    maxPlayers={game.teamSize}
-                    isAdmin={curPlayer.isAdmin}
-                  />
-                </Fragment>
-              ) : "" }
-
-              <div>
-                {curPlayer.isAdmin ? (
-                  <button type="button" class="btn btn-main2 size" onClick={openLeave}>End game</button>
-                ) : (
-                  <button type="button" class="btn btn-main2 size" onClick={openLeave}>Leave game</button>
-                )}
-
-                <Modal show={showLeave} onHide={closeLeave} centered>
+                <Modal show={showAddTeam} onHide={closeAddTeam} centered>
                   <Modal.Body>
-                    <div class="d-flex justify-content-center">
-                      {curPlayer.isAdmin ? (
-                        <span>Are you sure you want to end the game?</span>
-                      ) : (
-                        <span>Are you sure you want to leave the game?</span>
-                      )}
+                    <div class="d-flex flex-column justify-content-center align-items-center">
+                      <TeamsAdd
+                        gameId={game.gameId}
+                        player={playerAdd.name}
+                        close={closeAddTeam}
+                      />
                     </div>
                   </Modal.Body>
                   <Modal.Footer>
                     <div class="w-100 d-flex justify-content-center">
-                      <button type="button" class="btn btn-cancel me-2" onClick={closeLeave}>Cancel</button>
-                      <button type="button" class="btn btn-ok" onClick={curPlayer.isAdmin ? endGame : leaveGame}>
-                        {curPlayer.isAdmin ? "End Game" : "Leave Game"}
-                      </button>
+                      <button type="button" class="btn btn-cancel me-2" onClick={closeAddTeam}>Cancel</button>
                     </div>
                   </Modal.Footer>
                 </Modal>
-              </div>
-            </div>
-          )}
-        </Fragment>
-      ) : (
-        <div>
-          {removed()}
+
+                <button type="button" class="btn btn-main size" onClick={openStartGame}>Start game</button>
+
+                <Modal show={showStartGame} onHide={closeStartGame} centered>
+                  <Modal.Body>
+                    <div class="d-flex justify-content-center">
+                      <span>Are you sure you want to start the game?</span>
+                    </div>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <div class="w-100 d-flex justify-content-center">
+                      <button type="button" class="btn btn-cancel me-2" onClick={closeStartGame}>Cancel</button>
+                      <button type="button" class="btn btn-ok" onClick={gameStart}>Start game</button>
+                    </div>
+                  </Modal.Footer>
+                </Modal>
+              </Fragment>
+            ) : (
+              <Fragment>
+                <p class="mb-2">Players in lobby <span class="badge bg-secondary">{curGamePlayers.length}</span></p>
+                <div>
+                  { curGamePlayers.map(player => <Player
+                    key={ player._id }
+                    player={ player }
+                  />) }
+                </div>
+              </Fragment>
+            )}
+          </div>
+
+          {game.gameType === "Team" ? (
+            <Fragment>
+              {curPlayer.isAdmin ? (
+                <Fragment>
+                  <button type="button" class="btn btn-main mb-3 btn-sm d-flex align-items-center" onClick={openRandom}><FaRandom/>&nbsp;Teams</button>
+
+                  <Modal show={showRandom} onHide={closeRandom} centered>
+                    <Modal.Body>
+                      <div class="d-flex justify-content-center">
+                        <span>Are you sure you want to randomize teams?</span>
+                      </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <div class="w-100 d-flex justify-content-center">
+                        <button type="button" class="btn btn-cancel me-2" onClick={closeRandom}>Cancel</button>
+                        <button type="button" class="btn btn-ok" onClick={randomizeTeams}>Randomize</button>
+                      </div>
+                    </Modal.Footer>
+                  </Modal>
+                </Fragment>
+              ) : ""}
+              <Teams
+                gameId={game.gameId}
+                player={curPlayer}
+                maxPlayers={game.teamSize}
+                isAdmin={curPlayer.isAdmin}
+              />
+            </Fragment>
+          ) : "" }
+
+          <div>
+            {curPlayer.isAdmin ? (
+              <button type="button" class="btn btn-main2 size" onClick={openLeave}>End game</button>
+            ) : (
+              <button type="button" class="btn btn-main2 size" onClick={openLeave}>Leave game</button>
+            )}
+
+            <Modal show={showLeave} onHide={closeLeave} centered>
+              <Modal.Body>
+                <div class="d-flex justify-content-center">
+                  {curPlayer.isAdmin ? (
+                    <span>Are you sure you want to end the game?</span>
+                  ) : (
+                    <span>Are you sure you want to leave the game?</span>
+                  )}
+                </div>
+              </Modal.Body>
+              <Modal.Footer>
+                <div class="w-100 d-flex justify-content-center">
+                  <button type="button" class="btn btn-cancel me-2" onClick={closeLeave}>Cancel</button>
+                  <button type="button" class="btn btn-ok" onClick={curPlayer.isAdmin ? endGame : leaveGame}>
+                    {curPlayer.isAdmin ? "End Game" : "Leave Game"}
+                  </button>
+                </div>
+              </Modal.Footer>
+            </Modal>
+          </div>
         </div>
       )}
     </div>
   );
 };
+
+
+const TeamsAdd = ({ gameId, player, close }) => {
+  const teams = TeamsCollection.find({ gameId: gameId }, {
+    sort: { createdAt: 1 }
+  }).fetch();
+
+  return (
+    <Fragment>
+      <div>
+        {teams.map(team => <TeamAdd
+          key={team._id}
+          team={team}
+          teams={teams}
+          player={player}
+          gameId={gameId}
+          close={close}
+        />)}
+      </div>
+    </Fragment>
+  );
+}
+
+const TeamAdd = ({ team, teams, player, gameId, close }) => {
+  const [display, setDisplay] = useState("block")
+
+  const handleClick = () => {
+    close()
+
+    console.log(teams);
+
+    for (let n = 0; n < teams.length; n++) {
+      if (teams[n].players.includes(player)) {
+        Meteor.call('leaveTeam', player, teams[n].name, gameId)
+      }
+    }
+
+    Meteor.call('joinTeam', player, team.name, gameId)
+  }
+
+  useEffect(() => {
+    if (team.players.includes(player)) {
+      setDisplay("none")
+    } else {
+      setDisplay("block")
+    }
+  }, [])
+
+  return (
+    <div class="d-flex justify-content-center mb-1">
+      <button type="button" class="btn btn-main" onClick={handleClick} style={{display: display}}><FaPlus /><span class="ms-3">{team.name}</span></button>
+    </div>
+  );
+}

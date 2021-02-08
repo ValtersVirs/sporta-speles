@@ -8,14 +8,18 @@ import { GamesCollection } from '/imports/api/GamesCollection';
 import { GameLobby } from './GameLobby';
 import { Player } from './Player';
 
-export const PlayerJoin = ({ user, deletePlayer, goToMenu, removed }) => {
+export const PlayerJoin = ({ user, deletePlayer, goToMenu, removedGame, removedPlayer }) => {
   const [gameId, setGameId] = useState("");
   const [playerId, setPlayerId] = useState("");
   const [isFilledIn, setIsFilledIn] = useState(false);
   const [showStarted, setShowStarted] = useState(false);
+  const [showNotFound, setShowNotFound] = useState(false);
 
   const openStarted = () => setShowStarted(true)
   const closeStarted = () => setShowStarted(false)
+
+  const openNotFound = () => setShowNotFound(true)
+  const closeNotFound = () => setShowNotFound(false)
 
   if (PlayersCollection.find({ name: user.username, inGame: true }).count() !== 0 && !gameId) {
     setIsFilledIn(true);
@@ -25,8 +29,10 @@ export const PlayerJoin = ({ user, deletePlayer, goToMenu, removed }) => {
   const handleSubmit = e => {
     e.preventDefault();
 
-    if (!gameId || GamesCollection.find({ gameId: gameId }).count() === 0)
+    if (!gameId || GamesCollection.find({ gameId: gameId }).count() === 0) {
+      openNotFound()
       return;
+    }
 
     if (GamesCollection.findOne({ gameId: gameId}).gameStart === true) {
       openStarted()
@@ -46,7 +52,8 @@ export const PlayerJoin = ({ user, deletePlayer, goToMenu, removed }) => {
           gameId={gameId}
           deletePlayer={deletePlayer}
           goToMenu={goToMenu}
-          removed={removed}
+          removedPlayer={removedPlayer}
+          removedGame={removedGame}
         />
       ) : (
         <div class="d-flex justify-content-center">
@@ -72,6 +79,19 @@ export const PlayerJoin = ({ user, deletePlayer, goToMenu, removed }) => {
                 <Modal.Footer>
                   <div class="w-100 d-flex justify-content-center">
                     <button type="button" class="btn btn-ok" onClick={closeStarted}>Ok</button>
+                  </div>
+                </Modal.Footer>
+              </Modal>
+
+              <Modal show={showNotFound} onHide={closeNotFound} centered>
+                <Modal.Body>
+                  <div class="d-flex justify-content-center">
+                    <span>Game not found</span>
+                  </div>
+                </Modal.Body>
+                <Modal.Footer>
+                  <div class="w-100 d-flex justify-content-center">
+                    <button type="button" class="btn btn-ok" onClick={closeNotFound}>Ok</button>
                   </div>
                 </Modal.Footer>
               </Modal>

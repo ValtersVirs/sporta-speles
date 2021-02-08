@@ -59,7 +59,7 @@ export const Round = ({ participants, roundNr, gameId, gameType, collection, isA
         }
         matchParticipants = [...matchParticipants, participants[j]]
         let number = j % 2
-        if (j % 2) match.push(<div key={2} class="col-2 d-flex justify-content-center align-items-center">vs</div>,
+        if (j % 2) match.push(<div key={i} class="col-2 d-flex justify-content-center align-items-center">vs</div>,
           <Participant
             key={participants[j].name}
             participant={participants[j]}

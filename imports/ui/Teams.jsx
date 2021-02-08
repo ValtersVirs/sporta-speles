@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, Fragment } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Modal } from 'react-bootstrap';
 import { TeamsCollection } from '/imports/api/TeamsCollection';
-import { FaRegEdit } from 'react-icons/fa';
+import { FaRegEdit, FaTimes } from 'react-icons/fa';
 
 export const Teams = ({ gameId, player, maxPlayers, isAdmin }) => {
   const curGameTeams = TeamsCollection.find({ gameId: gameId }, {
@@ -138,6 +138,9 @@ const Team = ({ teams, team, player, gameId, maxPlayers, isAdmin }) => {
       { team.players.map(teamPlayer => <TeamPlayer
         key={teamPlayer}
         player={teamPlayer}
+        team={team.name}
+        isAdmin={isAdmin}
+        gameId={gameId}
       />) }
       <button type="button" class="btn btn-main btn-sm size-100px" onClick={handleJoinClick} style={{display: displayJoin}}>Join team</button>
       <button type="button" class="btn btn-main2 btn-sm size-100px" onClick={handleLeaveClick} style={{display: displayLeave}}>Leave team</button>
@@ -145,8 +148,23 @@ const Team = ({ teams, team, player, gameId, maxPlayers, isAdmin }) => {
   );
 };
 
-const TeamPlayer = ({ player }) => {
+const TeamPlayer = ({ player, team, isAdmin, gameId }) => {
+  const handleClick = () => {
+    Meteor.call('leaveTeam', player, team, gameId)
+  }
+
   return (
-    <span>{player}</span>
+    <Fragment>
+    {isAdmin ? (
+      <div class="d-flex mb-1">
+        <span>{player}</span>
+        <button type="button" class="btn btn-main2 btn-sm ms-2 p-0 d-flex justify-content-center align-items-center box-25px"
+          onClick={handleClick}
+        ><FaTimes/></button>
+      </div>
+    ) : (
+      <span>{player}</span>
+    )}
+    </Fragment>
   );
 };

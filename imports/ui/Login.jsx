@@ -13,7 +13,6 @@ export const Login = ({ goToMenu }) => {
 
     Meteor.loginWithPassword(username, password, (err) => {
       if (err) {
-        alert(err)
         setError(true)
       } else {
         goToMenu();

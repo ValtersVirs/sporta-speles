@@ -3,8 +3,6 @@ import { Meteor } from 'meteor/meteor';
 import { Modal } from 'react-bootstrap';
 import { FaTrash } from 'react-icons/fa';
 
-import { TeamsCollection } from '/imports/api/TeamsCollection';
-
 export const Settings = ({ user, goToMenu }) => {
   const [showDelete, setShowDelete] = useState(false)
   const [confirm, setConfirm] = useState('')

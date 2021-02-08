@@ -21,7 +21,8 @@ export const App = () => {
   const [game, setGame] = useState("")
   const [leaveText, setLeaveText] = useState("")
   const [showDelete, setShowDelete] = useState(false)
-  const [showRemoved, setShowRemoved] = useState(false)
+  const [showRemovedPlayer, setShowRemovedPlayer] = useState(false)
+  const [showRemovedGame, setShowRemovedGame] = useState(false)
   const [settings, setSettings] = useState(false)
 
   useEffect(() => {
@@ -49,9 +50,14 @@ export const App = () => {
     setShowButtons(true);
   }
 
-  const removed = () => {
+  const removedPlayer = () => {
     showMenu()
-    openRemoved()
+    openRemovedPlayer()
+  }
+
+  const removedGame = () => {
+    showMenu()
+    openRemovedGame()
   }
 
   const joinGame = () => {
@@ -83,8 +89,11 @@ export const App = () => {
   const openDelete = () => setShowDelete(true)
   const closeDelete = () => setShowDelete(false)
 
-  const openRemoved = () => setShowRemoved(true)
-  const closeRemoved = () => setShowRemoved(false)
+  const openRemovedPlayer = () => setShowRemovedPlayer(true)
+  const closeRemovedPlayer = () => setShowRemovedPlayer(false)
+
+  const openRemovedGame = () => setShowRemovedGame(true)
+  const closeRemovedGame = () => setShowRemovedGame(false)
 
   return (
     <Fragment>
@@ -139,7 +148,7 @@ export const App = () => {
                   </Modal>
                 </div>
 
-                <Modal show={showRemoved} onHide={closeRemoved} centered>
+                <Modal show={showRemovedPlayer} onHide={closeRemovedPlayer} centered>
                   <Modal.Body>
                     <div class="d-flex justify-content-center">
                       <span>You have been removed from the game</span>
@@ -147,7 +156,20 @@ export const App = () => {
                   </Modal.Body>
                   <Modal.Footer>
                     <div class="w-100 d-flex justify-content-center">
-                      <button type="button" class="btn btn-ok" onClick={closeRemoved}>Ok</button>
+                      <button type="button" class="btn btn-ok" onClick={closeRemovedPlayer}>Ok</button>
+                    </div>
+                  </Modal.Footer>
+                </Modal>
+
+                <Modal show={showRemovedGame} onHide={closeRemovedGame} centered>
+                  <Modal.Body>
+                    <div class="d-flex justify-content-center">
+                      <span>Game has ended</span>
+                    </div>
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <div class="w-100 d-flex justify-content-center">
+                      <button type="button" class="btn btn-ok" onClick={closeRemovedGame}>Ok</button>
                     </div>
                   </Modal.Footer>
                 </Modal>
@@ -158,14 +180,16 @@ export const App = () => {
               user={user}
               deletePlayer={deletePlayer}
               goToMenu={showMenu}
-              removed={removed}
+              removedPlayer={removedPlayer}
+              removedGame={removedGame}
              /> ) : ( "" )}
 
             {create ? ( <CreateGame
               user={user}
               deletePlayer={deletePlayer}
               goToMenu={showMenu}
-              removed={removed}
+              removedPlayer={removedPlayer}
+              removedGame={removedGame}
             /> ) : ( "" )}
 
             {settings ? ( <Settings

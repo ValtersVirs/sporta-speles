@@ -13,9 +13,10 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
   const callOnce = useRef(0);
   const [update, setUpdate] = useState(0);
   const [round, setRound] = useState('')
-  const [winner, setWinner] = useState(false);
-  const temp = useRef(false);
+  const isWinner = useRef(false);
   const [showLeave, setShowLeave] = useState(false);
+  const [showLeft, setShowLeft] = useState(false);
+  const [showRight, setShowRight] = useState(false);
 
   const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
 
@@ -168,11 +169,32 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
     if (round > 0) setRound(round - 1)
   }
 
+  useEffect(() => {
+    if (round === 0 && roundList.length === 1) {
+      setShowLeft(false)
+      setShowRight(false)
+    } else if (round === 0 && roundList.length > 1) {
+      setShowLeft(false)
+      setShowRight(true)
+    } else if (round === (roundList.length - 1)) {
+      setShowLeft(true)
+      setShowRight(false)
+    } else {
+      setShowLeft(true)
+      setShowRight(true)
+    }
+  }, [round])
+
   const matchLoser = ( index, winnerScore, loserScore, points ) => {
     var loser = partCurrent.current[index].name;
     var winner = index % 2 ? index - 1 : index + 1;
     partCurrent.current[index].status = "lost";
-    Meteor.call('matchCompleted', partCurrent.current[winner].name, loser, winnerScore, loserScore, gameId, gameType, points)
+    let winnerName = partCurrent.current[winner].name
+    Meteor.call('matchCompleted', winnerName, loser, winnerScore, loserScore, gameId, gameType, points, (err, res) => {
+      if (roundList[roundList.length - 1].length === 2) {
+        Meteor.call('setWinner', gameId, gameType, winnerName)
+      }
+    })
   };
 
   const tournament = roundList.map((a, index) =>
@@ -188,15 +210,6 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
     />
   )
 
-  if (roundList[roundList.length - 1].length === 1 && temp.current === false) {
-    temp.current = true
-    setWinner(true)
-    
-    if (collection.find({ gameId: gameId, winner: true }).count() === 0) {
-      Meteor.call('setWinner', gameId, gameType, roundList[roundList.length - 1][0].name)
-    }
-  }
-
   const leaveGame = () => {
     Meteor.call('leaveStartedGame', name, (err, res) => {
       goToMenu();
@@ -210,10 +223,14 @@ export const Tournament = ({ part, gameId, gameType, endGame, goToMenu, name, is
     <div class="d-flex align-items-center flex-column">
       <div class="row mb-3 size">
         <div class="col-6 d-flex justify-content-start p-0">
-          <button type="button" class="btn btn-main d-flex justify-content-center align-items-center" onClick={prevRound}><FaArrowLeft/></button>
+          {showLeft ? (
+            <button type="button" class="btn btn-main d-flex justify-content-center align-items-center" onClick={prevRound}><FaArrowLeft/></button>
+          ) : ""}
         </div>
         <div class="col-6 d-flex justify-content-end p-0">
-          <button type="button" class="btn btn-main d-flex justify-content-center align-items-center" onClick={nextRound}><FaArrowRight/></button>
+          {showRight ? (
+            <button type="button" class="btn btn-main d-flex justify-content-center align-items-center" onClick={nextRound}><FaArrowRight/></button>
+          ) : ""}
         </div>
       </div>
       {tournament[round]}

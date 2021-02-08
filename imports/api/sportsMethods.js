@@ -13,7 +13,7 @@ Meteor.methods({
       createdAt: new Date()
     });
   },
-  'gameCreate'(gameId, select, scoreType, isOvertime, teamSize, teamNumber) {
+  'gameCreate'(gameId, select, scoreType, isOvertime, teamSize, teamNumber, custom, teamNames) {
     if (select === "Team") {
       GamesCollection.insert({
         gameId: gameId,
@@ -23,13 +23,24 @@ Meteor.methods({
         numberOfTeams: teamNumber,
       });
 
-      for (let n = 0; n < teamNumber; n++) {
-        TeamsCollection.insert({
-          gameId: gameId,
-          name: `Team ${n + 1}`,
-          players: [],
-          createdAt: new Date(),
-        });
+      if (custom) {
+        for (let n = 0; n < teamNumber; n++) {
+          TeamsCollection.insert({
+            gameId: gameId,
+            name: teamNames[n].trim(),
+            players: [],
+            createdAt: new Date(),
+          });
+        }
+      } else {
+        for (let n = 0; n < teamNumber; n++) {
+          TeamsCollection.insert({
+            gameId: gameId,
+            name: `Team ${n + 1}`,
+            players: [],
+            createdAt: new Date(),
+          });
+        }
       }
     } else if (select === "Leaderboard") {
       GamesCollection.insert({
@@ -164,6 +175,7 @@ Meteor.methods({
     })
   },
   'setWinner'(gameId, gameType, name) {
+    console.log("setWinner called");
     const collection = gameType === "Team" ? TeamsCollection : PlayersCollection;
 
     collection.update({ gameId: gameId, name: name }, {
@@ -171,12 +183,13 @@ Meteor.methods({
     })
 
     if (gameType === "Team") {
-      TeamsCollection.findOne({ gameId: gameId, name: "Team 1" }).players.forEach(player => {
+      TeamsCollection.findOne({ gameId: gameId, name: name }).players.forEach(player => {
         Meteor.users.update({ username: player }, {
           $inc: { "profile.wins": 1 }
         })
+
       })
-    } else {
+    } else if (gameType === "Individual") {
       Meteor.users.update({ username: name }, {
         $inc: { "profile.wins": 1 }
       })
